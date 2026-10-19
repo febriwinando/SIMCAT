@@ -1,0 +1,432 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { ExamService } from '../../../services/examService';
+
+const { attemptUuid } = Astro.params;
+
+if (!attemptUuid) {
+  return Astro.redirect('/dashboard/riwayat');
+}
+
+const result = ExamService.getAttemptResult(attemptUuid);
+
+if (!result) {
+  return Astro.redirect('/dashboard/riwayat');
+}
+
+const subtests = Object.values<any>(result.category_scores || {});
+const minutesSpent = Math.floor(result.time_spent_seconds / 60);
+const secondsSpent = result.time_spent_seconds % 60;
+---
+
+<Layout title={`Laporan Nilai - ${result.package_title} - SIMCAT 2026`}>
+  <div class="result-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb-nav">
+        <a href="/dashboard">Dashboard</a>
+        <span>/</span>
+        <a href="/dashboard/riwayat">Riwayat</a>
+        <span>/</span>
+        <span class="active">Laporan Nilai</span>
+      </nav>
+
+      <!-- Main Result Card -->
+      <div class="result-master-card glass-panel">
+        <div class="result-banner-top">
+          <div class="badge-status-wrap">
+            {result.is_passed ? (
+              <span class="badge badge-pass">✓ MEMENUHI AMBANG BATAS (LULUS)</span>
+            ) : (
+              <span class="badge badge-fail">✗ BELUM MEMENUHI AMBANG BATAS</span>
+            )}
+          </div>
+          <span class="exam-date">{new Date(result.graded_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB</span>
+        </div>
+
+        <div class="result-header-info">
+          <div>
+            <h1 class="result-title">{result.package_title}</h1>
+            <p class="result-user-meta">
+              Nama Peserta: <strong>{result.user_name || result.user_email}</strong> • Kode Sesi: <span class="mono-code">{result.attempt_uuid}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Big Score Hero -->
+        <div class="score-hero-grid">
+          <div class="score-hero-col">
+            <span class="sh-label">TOTAL SKOR DIPEROLEH</span>
+            <div class="sh-val text-primary">{result.total_score}</div>
+            <span class="sh-sub">dari skor maksimal {result.max_possible_score}</span>
+          </div>
+
+          <div class="sh-divider"></div>
+
+          <div class="score-hero-col">
+            <span class="sh-label">AKURASI JAWABAN</span>
+            <div class="sh-val text-accent">{result.accuracy_percent}%</div>
+            <span class="sh-sub">{result.correct_count} Benar • {result.wrong_count} Salah • {result.unanswered_count} Kosong</span>
+          </div>
+
+          <div class="sh-divider"></div>
+
+          <div class="score-hero-col">
+            <span class="sh-label">WAKTU DIGUNAKAN</span>
+            <div class="sh-val">{minutesSpent}m {secondsSpent}s</div>
+            <span class="sh-sub">Pencatatan resmi server</span>
+          </div>
+        </div>
+
+        <!-- Subtest Breakdown Progress Section -->
+        <div class="subtests-breakdown-section">
+          <h2 class="section-subheading">Rincian Perolehan Nilai Subtes</h2>
+          <div class="subtest-cards-grid">
+            {subtests.map((st: any) => {
+              const pct = st.maxScore > 0 ? Math.min(100, Math.round((st.score / st.maxScore) * 100)) : 0;
+              return (
+                <div class={`subtest-card ${st.isPassed ? 'passed' : 'failed'}`}>
+                  <div class="st-card-top">
+                    <div>
+                      <span class="badge badge-cpns">{st.code}</span>
+                      <h3 class="st-name">{st.name}</h3>
+                    </div>
+                    <div class="st-score-wrap">
+                      <span class={`st-score ${st.isPassed ? 'text-pass' : 'text-fail'}`}>
+                        {st.score} <span class="st-max">/ {st.maxScore}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="st-pass-info">
+                    <span>Ambang Batas: <strong>{st.passingGrade}</strong></span>
+                    <span class={st.isPassed ? 'text-pass' : 'text-fail'}>
+                      {st.isPassed ? '✓ Memenuhi' : '✗ Di bawah target'}
+                    </span>
+                  </div>
+
+                  <div class="progress-track">
+                    <div class={`progress-fill ${st.isPassed ? 'fill-pass' : 'fill-fail'}`} style={`width: ${pct}%;`}></div>
+                  </div>
+
+                  <div class="st-counts">
+                    <span>Benar: <strong>{st.correctCount}</strong></span>
+                    <span>Salah: <strong>{st.wrongCount}</strong></span>
+                    <span>Kosong: <strong>{st.unansweredCount}</strong></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <!-- Smart Recommendations -->
+        {result.recommendations && result.recommendations.length > 0 && (
+          <div class="recommendations-box">
+            <h3 class="rec-title">
+              <span class="sparkle">💡</span> Analisis & Rekomendasi Latihan Terarah
+            </h3>
+            <ul class="rec-list">
+              {result.recommendations.map((rec: string) => (
+                <li>{rec}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- Actions -->
+        <div class="result-actions-bar">
+          <a href={`/pembahasan/${result.package_slug}?attempt=${result.attempt_uuid}`} class="btn btn-primary" style="flex: 1.2;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            Buka Kunci & Pembahasan Soal
+          </a>
+          <a href={`/simulasi/${result.package_slug}`} class="btn btn-secondary" style="flex: 1;">
+            Ulangi Simulasi Ini
+          </a>
+          <a href="/dashboard/riwayat" class="btn btn-secondary" style="flex: 1;">
+            Kembali ke Riwayat
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .result-page-wrapper {
+    padding: 30px 0 80px;
+  }
+
+  .breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .breadcrumb-nav a {
+    color: var(--text-muted);
+  }
+
+  .breadcrumb-nav .active {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .result-master-card {
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .result-banner-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 16px;
+  }
+
+  .badge-pass {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+  }
+
+  .badge-fail {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+  }
+
+  .exam-date {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .result-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+
+  .result-user-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .mono-code {
+    font-family: var(--font-mono);
+    color: #60a5fa;
+  }
+
+  .score-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin: 28px 0 36px;
+  }
+
+  .score-hero-col {
+    text-align: center;
+  }
+
+  .sh-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .sh-val {
+    font-family: var(--font-mono);
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1.1;
+  }
+
+  .text-primary {
+    color: #3b82f6;
+  }
+
+  .text-accent {
+    color: #00c2ff;
+  }
+
+  .sh-sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    display: block;
+  }
+
+  .sh-divider {
+    width: 1px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .subtests-breakdown-section {
+    margin-bottom: 36px;
+  }
+
+  .section-subheading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 18px;
+  }
+
+  .subtest-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .subtest-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+  }
+
+  .subtest-card.passed {
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  .subtest-card.failed {
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  .st-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .st-name {
+    font-size: 1rem;
+    color: #ffffff;
+    margin-top: 4px;
+  }
+
+  .st-score {
+    font-family: var(--font-mono);
+    font-size: 1.45rem;
+    font-weight: 800;
+  }
+
+  .st-max {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .st-pass-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .text-pass { color: #10b981; }
+  .text-fail { color: #ef4444; }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.6s ease;
+  }
+
+  .fill-pass { background: #10b981; }
+  .fill-fail { background: #ef4444; }
+
+  .st-counts {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+  }
+
+  .st-counts strong {
+    color: #ffffff;
+  }
+
+  .recommendations-box {
+    background: rgba(21, 94, 239, 0.08);
+    border: 1px solid rgba(21, 94, 239, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 22px;
+    margin-bottom: 36px;
+  }
+
+  .rec-title {
+    font-size: 1rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rec-list {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rec-list li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .result-actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .score-hero-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .sh-divider {
+      display: none;
+    }
+  }
+</style>

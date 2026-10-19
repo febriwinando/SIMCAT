@@ -1,0 +1,743 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll, queryOne } from '../../db';
+
+// SSR: Fetch initial data from database
+const recentAttempts = queryAll(`
+  SELECT 
+    a.uuid, a.started_at, a.finished_at, a.status,
+    p.title as package_title, p.slug as package_slug, p.category_id,
+    c.name as category_name,
+    r.total_score, r.max_possible_score, r.is_passed,
+    r.accuracy_percent, r.time_spent_seconds, r.graded_at
+  FROM exam_attempts a
+  JOIN exam_packages p ON a.package_id = p.id
+  JOIN exam_categories c ON p.category_id = c.id
+  LEFT JOIN exam_results r ON a.id = r.attempt_id
+  WHERE a.status IN ('submitted', 'auto_submitted', 'graded')
+  ORDER BY a.id DESC
+  LIMIT 5
+`);
+
+const totalAttemptsCount = queryOne<{ count: number }>(`
+  SELECT COUNT(*) as count FROM exam_attempts WHERE status IN ('submitted', 'auto_submitted', 'graded')
+`)?.count || 0;
+
+const passedAttemptsCount = queryOne<{ count: number }>(`
+  SELECT COUNT(*) as count FROM exam_results WHERE is_passed = 1
+`)?.count || 0;
+
+const highestScore = queryOne<{ max_score: number }>(`
+  SELECT MAX(total_score) as max_score FROM exam_results
+`)?.max_score || 0;
+
+const avgScore = queryOne<{ avg_score: number }>(`
+  SELECT AVG(total_score) as avg_score FROM exam_results
+`)?.avg_score || 0;
+
+const passRate = totalAttemptsCount > 0 ? Math.round((passedAttemptsCount / totalAttemptsCount) * 100) : 0;
+---
+
+<Layout title="Dashboard Peserta - SIMCAT 2026">
+  <div class="dashboard-page-wrapper">
+    <div class="container">
+      <!-- Dashboard Top Header / Profile Bar -->
+      <div class="profile-header-card glass-panel">
+        <div class="profile-main">
+          <div class="avatar-box" id="user-avatar-badge">PS</div>
+          <div class="profile-info">
+            <div class="profile-role-badge">
+              <span class="pulse-dot"></span>
+              <span id="user-role-label">Peserta Terdaftar</span>
+            </div>
+            <h1 class="user-greeting" id="user-display-name">Peserta SIMCAT</h1>
+            <div class="profile-meta">
+              <span id="user-nik-label">NIK: 3201************0001</span>
+              <span>•</span>
+              <span id="user-target-label">Target: Seleksi Nasional CPNS 2026</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-action-btns">
+          <a href="/simulasi" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Mulai Ujian Baru
+          </a>
+        </div>
+      </div>
+
+      <!-- Dashboard Navigation Tabs -->
+      <div class="dash-tabs-bar">
+        <a href="/dashboard" class="dash-tab active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Ringkasan Belajar
+        </a>
+        <a href="/dashboard/riwayat" class="dash-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="12 8 12 12 14 14"></polyline>
+            <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
+          </svg>
+          Riwayat Ujian ({totalAttemptsCount})
+        </a>
+        <a href="/dashboard/analisis" class="dash-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Analisis Kelemahan
+        </a>
+        <a href="/dashboard/pembelian" class="dash-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          Paket Pro & Tryout Akbar
+        </a>
+      </div>
+
+      <!-- KPI Stat Grid -->
+      <div class="kpi-stats-grid">
+        <div class="kpi-card glass-panel">
+          <div class="kpi-top">
+            <span class="kpi-title">Total Simulasi</span>
+            <span class="kpi-icon blue">📝</span>
+          </div>
+          <div class="kpi-value">{totalAttemptsCount}</div>
+          <div class="kpi-sub">Sesi ujian terselesaikan</div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-top">
+            <span class="kpi-title">Kelulusan Passing Grade</span>
+            <span class="kpi-icon green">🎯</span>
+          </div>
+          <div class="kpi-value text-green">{passRate}%</div>
+          <div class="kpi-sub">{passedAttemptsCount} dari {totalAttemptsCount} attempt memenuhi PG</div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-top">
+            <span class="kpi-title">Skor Tertinggi</span>
+            <span class="kpi-icon amber">🏆</span>
+          </div>
+          <div class="kpi-value text-amber">{highestScore}</div>
+          <div class="kpi-sub">Pencapaian simulasi terbaik</div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-top">
+            <span class="kpi-title">Rata-Rata Nilai</span>
+            <span class="kpi-icon cyan">⚡</span>
+          </div>
+          <div class="kpi-value text-cyan">{Math.round(avgScore * 10) / 10}</div>
+          <div class="kpi-sub">Dari seluruh modul tryout</div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="dashboard-grid">
+        <!-- Left: Recent Attempts List -->
+        <div class="dash-col main-col">
+          <div class="content-box glass-panel">
+            <div class="box-header">
+              <div>
+                <h2 class="box-title">Riwayat Simulasi Terakhir</h2>
+                <p class="box-desc">Daftar attempt simulasi CAT terstandarisasi yang telah Anda selesaikan.</p>
+              </div>
+              <a href="/dashboard/riwayat" class="btn btn-secondary btn-sm">Lihat Semua</a>
+            </div>
+
+            {recentAttempts.length > 0 ? (
+              <div class="attempts-list">
+                {recentAttempts.map((item) => (
+                  <div class="attempt-card">
+                    <div class="attempt-info">
+                      <div class="attempt-badges">
+                        <span class={`badge ${item.is_passed === 1 ? 'badge-green' : 'badge-red'}`}>
+                          {item.is_passed === 1 ? '✓ LULUS PG' : '✕ TIDAK LULUS'}
+                        </span>
+                        <span class="badge-tag">{item.category_name}</span>
+                      </div>
+                      <h3 class="attempt-title">{item.package_title}</h3>
+                      <div class="attempt-meta">
+                        <span>📅 {new Date(item.graded_at || item.finished_at || item.started_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>•</span>
+                        <span>⏱️ {Math.round((item.time_spent_seconds || 0) / 60)} menit</span>
+                        <span>•</span>
+                        <span>Akurasi: {Math.round(item.accuracy_percent || 0)}%</span>
+                      </div>
+                    </div>
+
+                    <div class="attempt-right">
+                      <div class="score-pill">
+                        <span class="score-num">{item.total_score}</span>
+                        <span class="score-max">/ {item.max_possible_score}</span>
+                      </div>
+                      <div class="action-buttons">
+                        <a href={`/dashboard/hasil/${item.uuid}`} class="btn btn-secondary btn-sm">
+                          Scorecard
+                        </a>
+                        <a href={`/pembahasan/${item.package_slug}`} class="btn btn-primary btn-sm">
+                          Pembahasan
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h3>Belum Ada Riwayat Ujian</h3>
+                <p>Mulai simulasi pertama Anda untuk mengukur kesiapan menghadapi tes CPNS, PPPK, BUMN, atau Kedinasan.</p>
+                <a href="/simulasi" class="btn btn-primary" style="margin-top: 16px;">
+                  Pilih Simulasi Sekarang
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Right: Readiness & Recommendations -->
+        <div class="dash-col side-col">
+          <!-- Readiness Card -->
+          <div class="content-box glass-panel readiness-card">
+            <h3 class="box-title">Target & Ambang Batas SKD</h3>
+            <p class="box-desc">Rujukan: KepmenPAN-RB No. 321/2024</p>
+
+            <div class="pg-target-list">
+              <div class="pg-target-item">
+                <div class="pg-item-header">
+                  <span class="pg-name">Tes Wawasan Kebangsaan (TWK)</span>
+                  <span class="pg-val">Min. 65</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-bar blue" style="width: 78%;"></div>
+                </div>
+                <span class="pg-status-note text-cyan">Passing Grade: 65 / Maksimal 150</span>
+              </div>
+
+              <div class="pg-target-item">
+                <div class="pg-item-header">
+                  <span class="pg-name">Tes Inteligensi Umum (TIU)</span>
+                  <span class="pg-val">Min. 80</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-bar green" style="width: 85%;"></div>
+                </div>
+                <span class="pg-status-note text-green">Passing Grade: 80 / Maksimal 175</span>
+              </div>
+
+              <div class="pg-target-item">
+                <div class="pg-item-header">
+                  <span class="pg-name">Tes Karakteristik Pribadi (TKP)</span>
+                  <span class="pg-val">Min. 166</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-bar amber" style="width: 80%;"></div>
+                </div>
+                <span class="pg-status-note text-amber">Passing Grade: 166 / Maksimal 225</span>
+              </div>
+            </div>
+
+            <div class="total-pg-box">
+              <div class="tpg-label">Total Nilai Kumulatif Maksimal</div>
+              <div class="tpg-val">550 Poin</div>
+            </div>
+          </div>
+
+          <!-- Quick Action Card -->
+          <div class="content-box glass-panel banner-cta-box">
+            <div class="cta-pill">UPGRADE PERSIAPAN</div>
+            <h3>Tryout Akbar Nasional 2026</h3>
+            <p>Uji kemampuan Anda serentak bersama ribuan peserta se-Indonesia dengan sistem perangkingan nasional.</p>
+            <a href="/dashboard/pembelian" class="btn btn-primary btn-block" style="margin-top: 16px;">
+              Daftar Tryout Akbar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .dashboard-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .profile-header-card {
+    padding: 28px 32px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.7) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .profile-main {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .avatar-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #00C2FF 0%, #0077FF 100%);
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0, 194, 255, 0.3);
+  }
+
+  .profile-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+
+  .user-greeting {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .profile-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+
+  .dash-tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .dash-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .dash-tab:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .dash-tab.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .kpi-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .kpi-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .kpi-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: #ffffff;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .kpi-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  .text-green { color: #10b981 !important; }
+  .text-amber { color: #f59e0b !important; }
+  .text-cyan { color: #00c2ff !important; }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+
+  .content-box {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .box-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .attempts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .attempt-card {
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+  }
+
+  .attempt-card:hover {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .attempt-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .badge-green {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .badge-red {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .badge-tag {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .attempt-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .attempt-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .attempt-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .score-pill {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .score-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: #ffffff;
+  }
+
+  .score-max {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+
+  .empty-state h3 {
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* Right column */
+  .pg-target-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 18px 0;
+  }
+
+  .pg-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 99px;
+  }
+
+  .progress-bar.blue { background: #00c2ff; }
+  .progress-bar.green { background: #10b981; }
+  .progress-bar.amber { background: #f59e0b; }
+
+  .pg-status-note {
+    font-size: 0.72rem;
+  }
+
+  .total-pg-box {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tpg-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  .tpg-val {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: monospace;
+  }
+
+  .banner-cta-box {
+    margin-top: 20px;
+    background: linear-gradient(135deg, rgba(0, 119, 255, 0.15) 0%, rgba(0, 194, 255, 0.05) 100%);
+    border: 1px solid rgba(0, 194, 255, 0.25);
+  }
+
+  .cta-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #00c2ff;
+    color: #080c14;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .banner-cta-box h3 {
+    color: #ffffff;
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+  }
+
+  .banner-cta-box p {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  @media (max-width: 992px) {
+    .kpi-stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .kpi-stats-grid {
+      grid-template-columns: 1fr;
+    }
+    .profile-header-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .attempt-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .attempt-right {
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const AUTH_KEY = 'cat_user_session';
+    const nameEl = document.getElementById('user-display-name');
+    const roleEl = document.getElementById('user-role-label');
+    const avatarEl = document.getElementById('user-avatar-badge');
+    const nikEl = document.getElementById('user-nik-label');
+    const targetEl = document.getElementById('user-target-label');
+
+    try {
+      const raw = localStorage.getItem(AUTH_KEY);
+      if (raw) {
+        const user = JSON.parse(raw);
+        if (user && user.isLoggedIn) {
+          if (nameEl) nameEl.textContent = user.name || 'Peserta SIMCAT';
+          if (roleEl) roleEl.textContent = user.roleName || 'Peserta Terdaftar';
+          if (nikEl && user.nikMasked) nikEl.textContent = `NIK: ${user.nikMasked}`;
+          if (targetEl && user.targetInstansi) targetEl.textContent = `Target: ${user.targetInstansi}`;
+          if (avatarEl && user.name) {
+            const initials = user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            avatarEl.textContent = initials;
+          }
+        }
+      }
+    } catch (e) {}
+  })();
+</script>

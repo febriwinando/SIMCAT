@@ -1,0 +1,245 @@
+---
+import type { ExamPackage } from '../data/types';
+
+interface Props {
+  pkg: ExamPackage;
+}
+
+const { pkg } = Astro.props;
+
+// Determine accent icon and gradient based on category
+let iconColor = '#0ea5e9';
+let gradientGlow = 'rgba(14, 165, 233, 0.15)';
+
+if (pkg.category === 'PPPK') {
+  iconColor = '#10b981';
+  gradientGlow = 'rgba(16, 185, 129, 0.15)';
+} else if (pkg.category === 'POLRI') {
+  iconColor = '#f59e0b';
+  gradientGlow = 'rgba(245, 158, 11, 0.15)';
+} else if (pkg.category === 'TNI') {
+  iconColor = '#ef4444';
+  gradientGlow = 'rgba(239, 68, 68, 0.15)';
+}
+---
+
+<div class="package-card glass-panel" style={`--accent-glow: ${gradientGlow};`}>
+  <div class="card-header">
+    <div class="header-badges">
+      <span class={`badge ${pkg.badgeClass}`}>{pkg.category}</span>
+      <span class="edition-tag">{pkg.yearEdition}</span>
+    </div>
+    <div class="time-tag">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      {pkg.durationMinutes} Menit
+    </div>
+  </div>
+
+  <div class="card-body">
+    <h3 class="card-title">{pkg.title}</h3>
+    <p class="card-desc">{pkg.description}</p>
+
+    <div class="passing-grades-box">
+      <span class="pg-heading">Ketentuan Passing Grade:</span>
+      <div class="pg-list">
+        {pkg.passingGrades.map((pg) => (
+          <div class="pg-item">
+            <span class="pg-code">{pg.code}</span>
+            <span class="pg-score">Min. {pg.minScore}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="card-stats">
+      <div class="stat-item">
+        <span class="stat-num">{pkg.questions.length}</span>
+        <span class="stat-lbl">Soal Tersedia</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{pkg.durationMinutes}m</span>
+        <span class="stat-lbl">Simulasi Waktu</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">CAT</span>
+        <span class="stat-lbl">Standar BKN</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <a href={`/simulasi/${pkg.slug}`} class="btn btn-primary btn-block" id={`start-btn-${pkg.slug}`}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      Mulai Simulasi CAT
+    </a>
+    <a href={`/pembahasan/${pkg.slug}`} class="btn btn-secondary btn-block" id={`study-btn-${pkg.slug}`}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+      Pelajari Kisi & Soal
+    </a>
+  </div>
+</div>
+
+<style>
+  .package-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .package-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px var(--accent-glow);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .header-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .edition-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .time-tag {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #ffffff;
+    line-height: 1.3;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .passing-grades-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+
+  .pg-heading {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .pg-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pg-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.78rem;
+  }
+
+  .pg-code {
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .pg-score {
+    color: #38bdf8;
+    font-family: var(--font-mono);
+  }
+
+  .card-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-num {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .stat-lbl {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+</style>

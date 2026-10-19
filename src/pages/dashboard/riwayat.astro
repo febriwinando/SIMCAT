@@ -1,0 +1,474 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const attempts = queryAll(`
+  SELECT 
+    a.id, a.uuid, a.user_id, a.started_at, a.finished_at, a.status,
+    p.id as package_id, p.title as package_title, p.slug as package_slug,
+    p.category_id, c.name as category_name,
+    r.total_score, r.max_possible_score, r.is_passed,
+    r.correct_count, r.wrong_count, r.unanswered_count,
+    r.accuracy_percent, r.time_spent_seconds, r.category_scores,
+    r.graded_at
+  FROM exam_attempts a
+  JOIN exam_packages p ON a.package_id = p.id
+  JOIN exam_categories c ON p.category_id = c.id
+  LEFT JOIN exam_results r ON a.id = r.attempt_id
+  WHERE a.status IN ('submitted', 'auto_submitted', 'graded')
+  ORDER BY a.id DESC
+`);
+
+const parsedAttempts = attempts.map((row) => {
+  let subtests: any[] = [];
+  if (row.category_scores) {
+    try {
+      const breakdown = JSON.parse(row.category_scores);
+      subtests = Object.keys(breakdown).map((k) => ({
+        code: k,
+        name: breakdown[k].name,
+        score: breakdown[k].score,
+        passingGrade: breakdown[k].passingGrade,
+        isPassed: breakdown[k].isPassed
+      }));
+    } catch (e) {}
+  }
+
+  return {
+    ...row,
+    isPassed: row.is_passed === 1,
+    subtests
+  };
+});
+---
+
+<Layout title="Riwayat Ujian Lengkap - SIMCAT 2026">
+  <div class="dashboard-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="dash-breadcrumb">
+        <a href="/dashboard">Dashboard</a>
+        <span>/</span>
+        <span>Riwayat Simulasi</span>
+      </div>
+
+      <div class="page-header-row">
+        <div>
+          <h1 class="page-title">Riwayat Simulasi CAT</h1>
+          <p class="page-subtitle">Daftar seluruh sesi ujian yang tersimpan secara terverifikasi pada sistem SIMCAT.</p>
+        </div>
+        <a href="/simulasi" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Mulai Ujian Baru
+        </a>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="filter-pills-row">
+        <button class="filter-pill active" data-filter="all">Semua Kategori ({parsedAttempts.length})</button>
+        <button class="filter-pill" data-filter="cpns">CPNS SKD</button>
+        <button class="filter-pill" data-filter="pppk">PPPK</button>
+        <button class="filter-pill" data-filter="bumn">BUMN</button>
+        <button class="filter-pill" data-filter="sekolah-kedinasan">Sekolah Kedinasan</button>
+      </div>
+
+      <!-- History Table / Cards -->
+      <div class="history-container glass-panel">
+        {parsedAttempts.length > 0 ? (
+          <div class="history-list" id="history-items-wrapper">
+            {parsedAttempts.map((item) => (
+              <div class="history-card" data-category={item.category_id}>
+                <div class="h-main">
+                  <div class="h-badge-row">
+                    <span class={`badge ${item.isPassed ? 'badge-pass' : 'badge-fail'}`}>
+                      {item.isPassed ? '✓ MEMENUHI PASSING GRADE' : '✕ TIDAK LULUS PG'}
+                    </span>
+                    <span class="badge-cat">{item.category_name}</span>
+                    <span class="badge-date">
+                      {new Date(item.graded_at || item.finished_at || item.started_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+
+                  <h3 class="h-title">{item.package_title}</h3>
+
+                  <div class="h-subtests-breakdown">
+                    {item.subtests.length > 0 ? (
+                      item.subtests.map((sub: any) => (
+                        <div class="sub-chip">
+                          <span class="sub-label">{sub.code}:</span>
+                          <span class={`sub-score ${sub.isPassed ? 'text-green' : 'text-red'}`}>
+                            {sub.score}
+                          </span>
+                          <span class="sub-pg">/ PG: {sub.passingGrade}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span class="text-dim">Rincian subtes tersimpan</span>
+                    )}
+                  </div>
+
+                  <div class="h-meta-stats">
+                    <span>⏱️ Pengerjaan: {Math.round((item.time_spent_seconds || 0) / 60)} menit</span>
+                    <span>•</span>
+                    <span>🎯 Akurasi: {Math.round(item.accuracy_percent || 0)}%</span>
+                    <span>•</span>
+                    <span>Benar: <strong class="text-green">{item.correct_count}</strong></span>
+                    <span>•</span>
+                    <span>Salah: <strong class="text-red">{item.wrong_count}</strong></span>
+                    <span>•</span>
+                    <span>Kosong: {item.unanswered_count}</span>
+                  </div>
+                </div>
+
+                <div class="h-side">
+                  <div class="total-score-wrap">
+                    <div class="score-label">SKOR TOTAL</div>
+                    <div class="score-big">{item.total_score}</div>
+                    <div class="score-max">Maks. {item.max_possible_score}</div>
+                  </div>
+
+                  <div class="h-action-btns">
+                    <a href={`/dashboard/hasil/${item.uuid}`} class="btn btn-secondary btn-sm">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                      </svg>
+                      Scorecard
+                    </a>
+                    <a href={`/pembahasan/${item.package_slug}`} class="btn btn-primary btn-sm">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      Pembahasan
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="empty-state">
+            <div class="empty-icon">📁</div>
+            <h3>Belum Ada Riwayat Ujian di Server</h3>
+            <p>Selesaikan salah satu modul simulasi CAT kami untuk melihat hasil analisis lengkap Anda.</p>
+            <a href="/simulasi" class="btn btn-primary" style="margin-top: 16px;">
+              Mulai Simulasi CAT
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .dashboard-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .dash-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .dash-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .filter-pills-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .filter-pill {
+    padding: 8px 16px;
+    border-radius: 99px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .filter-pill.active {
+    background: #00c2ff;
+    color: #080c14;
+    border-color: #00c2ff;
+  }
+
+  .history-container {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .history-card {
+    padding: 20px 24px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s ease;
+  }
+
+  .history-card:hover {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .h-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge-pass {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+
+  .badge-fail {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+
+  .badge-cat {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+
+  .badge-date {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .h-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  .h-subtests-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .sub-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.78rem;
+    font-family: monospace;
+  }
+
+  .sub-label {
+    color: #94a3b8;
+  }
+
+  .sub-score {
+    font-weight: 700;
+  }
+
+  .sub-pg {
+    color: #64748b;
+    font-size: 0.72rem;
+  }
+
+  .h-meta-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    flex-wrap: wrap;
+  }
+
+  .text-green { color: #10b981 !important; }
+  .text-red { color: #ef4444 !important; }
+  .text-dim { color: #64748b; }
+
+  .h-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    min-width: 180px;
+  }
+
+  .total-score-wrap {
+    text-align: right;
+  }
+
+  .score-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+  }
+
+  .score-big {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: monospace;
+    line-height: 1.1;
+  }
+
+  .score-max {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  .h-action-btns {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+  }
+
+  .empty-state h3 {
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 768px) {
+    .history-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .h-side {
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .total-score-wrap {
+      text-align: left;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const filterBtns = document.querySelectorAll('.filter-pill');
+    const cards = document.querySelectorAll('.history-card');
+
+    filterBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        cards.forEach((card) => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,430 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Panduan Resmi CAT & Tata Tertib Ujian - SIMCAT 2026">
+  <div class="panduan-page-wrapper">
+    <div class="container">
+      <div class="panduan-header text-center">
+        <span class="badge-pill">STANDAR CAT BKN RESMI</span>
+        <h1 class="page-title">Panduan Ujian & Sistem Penilaian CAT</h1>
+        <p class="page-subtitle">
+          Pahami tata cara pengerjaan ujian berbasis komputer, aturan penilaian ambang batas, dan arti kode navigasi lembar ujian CAT.
+        </p>
+      </div>
+
+      <div class="panduan-grid">
+        <!-- Main: Guide Content -->
+        <div class="panduan-main-col">
+          <!-- Section 1: Skema Penilaian -->
+          <div class="guide-box glass-panel">
+            <h2 class="guide-heading">1. Sistem Penilaian & Passing Grade SKD CPNS 2026</h2>
+            <p class="guide-text">
+              Berdasarkan Keputusan Menteri Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (KepmenPAN-RB) No. 321 Tahun 2024, ujian Seleksi Kompetensi Dasar (SKD) memiliki 110 butir soal dengan durasi 100 menit:
+            </p>
+
+            <div class="subtest-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>Subtes Materi</th>
+                    <th>Jumlah Soal</th>
+                    <th>Bobot Nilai</th>
+                    <th>Passing Grade (Ambang Batas)</th>
+                    <th>Nilai Maksimal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Tes Wawasan Kebangsaan (TWK)</strong></td>
+                    <td>30 Butir</td>
+                    <td>Benar: +5 | Salah/Kosong: 0</td>
+                    <td><strong class="text-green">65 Poin</strong> (Min. 13 benar)</td>
+                    <td>150 Poin</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tes Inteligensi Umum (TIU)</strong></td>
+                    <td>35 Butir</td>
+                    <td>Benar: +5 | Salah/Kosong: 0</td>
+                    <td><strong class="text-green">80 Poin</strong> (Min. 16 benar)</td>
+                    <td>175 Poin</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tes Karakteristik Pribadi (TKP)</strong></td>
+                    <td>45 Butir</td>
+                    <td>Skala Bobot: 1 s.d. 5 | Kosong: 0</td>
+                    <td><strong class="text-green">166 Poin</strong> (Rata-rata 3.7)</td>
+                    <td>225 Poin</td>
+                  </tr>
+                  <tr class="total-row">
+                    <td><strong>TOTAL KUMULATIF SKD</strong></td>
+                    <td><strong>110 Butir</strong></td>
+                    <td><strong>-</strong></td>
+                    <td><strong>Wajib Lulus Ketiganya</strong></td>
+                    <td><strong>550 Poin</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="guide-callout info">
+              <span class="callout-icon">ℹ️</span>
+              <div class="callout-content">
+                <strong>Ketentuan Kelulusan Ranking:</strong> Untuk dapat melaju ke tahap SKB (Seleksi Kompetensi Bidang), peserta <em>wajib memenuhi passing grade ketiga subtes sekaligus</em>, kemudian diperingkat maksimal 3 kali jumlah alokasi formasi yang dilamar.
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Panduan Tombol CAT -->
+          <div class="guide-box glass-panel">
+            <h2 class="guide-heading">2. Panduan Warna Palet & Tombol Layar CAT</h2>
+            <p class="guide-text">
+              Antarmuka simulasi CAT SIMCAT dirancang dengan layout standar BKN yang bersih dan minimalis untuk meminimalkan kelelahan mata:
+            </p>
+
+            <div class="palette-guide-grid">
+              <div class="palette-item">
+                <div class="palette-swatch green">42</div>
+                <div>
+                  <strong>Warna Hijau (Terjawab)</strong>
+                  <p>Soal telah dijawab dan pilihan Anda tersimpan aman secara otomatis di server.</p>
+                </div>
+              </div>
+
+              <div class="palette-item">
+                <div class="palette-swatch yellow">17</div>
+                <div>
+                  <strong>Warna Kuning (Ragu-ragu)</strong>
+                  <p>Opsi telah dipilih tetapi ditandai untuk ditinjau kembali sebelum waktu ujian berakhir.</p>
+                </div>
+              </div>
+
+              <div class="palette-item">
+                <div class="palette-swatch gray">09</div>
+                <div>
+                  <strong>Warna Abu-abu / Merah (Belum Dijawab)</strong>
+                  <p>Soal belum dijawab atau dilewati. Pastikan seluruh soal berubah hijau sebelum submit.</p>
+                </div>
+              </div>
+
+              <div class="palette-item">
+                <div class="palette-swatch blue">01</div>
+                <div>
+                  <strong>Warna Biru Berbingkai (Soal Aktif)</strong>
+                  <p>Nomor soal yang saat ini sedang terbuka dan aktif di layar komputer Anda.</p>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="sub-heading">Fungsi Tombol Pengerjaan:</h3>
+            <ul class="guide-points">
+              <li><strong>Tombol "Soal Sebelumnya":</strong> Kembali ke 1 nomor soal sebelum nomor yang aktif.</li>
+              <li><strong>Tombol "Ragu-ragu" (Checkbox):</strong> Memberikan tanda kuning pada nomor palet untuk diperiksa ulang.</li>
+              <li><strong>Tombol "Simpan & Lanjutkan":</strong> Menyimpan jawaban ke database dan berpindah ke nomor berikutnya.</li>
+              <li><strong>Tombol "Selesai Ujian":</strong> Memfinalisasi seluruh sesi ujian, mengunci jawaban, dan memunculkan scorecard hasil.</li>
+            </ul>
+          </div>
+
+          <!-- Section 3: Tata Tertib -->
+          <div class="guide-box glass-panel">
+            <h2 class="guide-heading">3. Tata Tertib & Integritas Ujian CAT</h2>
+            <ul class="rules-numbered-list">
+              <li><strong>Timer Server Mutlak:</strong> Waktu ujian dihitung dari server pusat secara otoritatif. Menutup tab atau mematikan browser tidak menghentikan jalannya waktu ujian.</li>
+              <li><strong>Autosave Berkelanjutan:</strong> Setiap kali Anda memilih opsi jawaban, sistem secara otomatis mengirim sinyal simpanan terenkripsi ke database server.</li>
+              <li><strong>Penyelesaian Otomatis (Auto-Submit):</strong> Apabila waktu 100 menit habis, sistem akan secara otomatis mengunci dan menilai seluruh jawaban yang telah Anda pilih.</li>
+              <li><strong>Kunci Pembahasan Pasca-Ujian:</strong> Kunci jawaban dan pembahasan trik cepat hanya dapat dibuka setelah sesi ujian dinyatakan selesai atau berstatus graded.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Side: Quick Tips & CTAs -->
+        <div class="panduan-side-col">
+          <div class="guide-box glass-panel">
+            <h3 class="box-title">Tips Efisiensi Waktu 100 Menit</h3>
+            <div class="tips-timeline">
+              <div class="tip-step">
+                <span class="step-num">01</span>
+                <div>
+                  <strong>Menit 0 - 30: Sikat TKP (45 Soal)</strong>
+                  <p>Tidak ada jawaban bernilai nol jika diisi. Pilih opsi yang paling menunjukkan integritas dan pelayanan profesional.</p>
+                </div>
+              </div>
+
+              <div class="tip-step">
+                <span class="step-num">02</span>
+                <div>
+                  <strong>Menit 30 - 55: Kerjakan TWK (30 Soal)</strong>
+                  <p>Soal wacana panjang dianalisis kata kuncinya. Jawaban salah bernilai 0, jangan biarkan kosong.</p>
+                </div>
+              </div>
+
+              <div class="tip-step">
+                <span class="step-num">03</span>
+                <div>
+                  <strong>Menit 55 - 90: Selesaikan TIU (35 Soal)</strong>
+                  <p>Dahulukan silogisme dan analogi kata sebelum masuk ke perhitungan deret dan pecahan bertingkat.</p>
+                </div>
+              </div>
+
+              <div class="tip-step">
+                <span class="step-num">04</span>
+                <div>
+                  <strong>Menit 90 - 100: Sapu Bersih Ragu-ragu</strong>
+                  <p>Pastikan palet kuning sudah dipastikan jawabannya dan tidak ada nomor yang tertinggal abu-abu.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guide-box glass-panel" style="margin-top: 20px; text-align: center;">
+            <h3 class="box-title">Siap Mencoba Simulasi?</h3>
+            <p style="color: #94a3b8; font-size: 0.88rem; margin: 8px 0 16px;">
+              Langsung rasakan atmosfer simulasi CAT terstandarisasi dengan timer nyata.
+            </p>
+            <a href="/simulasi" class="btn btn-primary btn-block">
+              Pilih Paket Simulasi Sekarang
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .panduan-page-wrapper {
+    padding: 40px 0 80px;
+  }
+
+  .panduan-header {
+    max-width: 720px;
+    margin: 0 auto 36px;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .panduan-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+
+  .guide-box {
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 24px;
+  }
+
+  .guide-heading {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 12px;
+  }
+
+  .sub-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 20px 0 10px;
+  }
+
+  .guide-text {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+
+  .subtest-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 18px;
+  }
+
+  .guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .guide-table th {
+    padding: 10px 12px;
+    background: rgba(30, 41, 59, 0.6);
+    color: #94a3b8;
+    text-align: left;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .guide-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #cbd5e1;
+  }
+
+  .total-row td {
+    background: rgba(0, 194, 255, 0.05);
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .text-green { color: #10b981 !important; }
+
+  .guide-callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(0, 194, 255, 0.08);
+    border: 1px solid rgba(0, 194, 255, 0.2);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #cbd5e1;
+  }
+
+  .callout-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .palette-guide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 18px 0;
+  }
+
+  .palette-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .palette-swatch {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-family: monospace;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  .palette-swatch.green { background: #10b981; color: #ffffff; }
+  .palette-swatch.yellow { background: #f59e0b; color: #080c14; }
+  .palette-swatch.gray { background: #334155; color: #94a3b8; }
+  .palette-swatch.blue { background: #00c2ff; color: #080c14; border: 2px solid #ffffff; }
+
+  .palette-item strong {
+    color: #ffffff;
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .palette-item p {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  .guide-points, .rules-numbered-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .tips-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .tip-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-size: 1.1rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: #00c2ff;
+    padding: 2px 6px;
+    background: rgba(0, 194, 255, 0.1);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .tip-step strong {
+    color: #ffffff;
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .tip-step p {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .box-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  @media (max-width: 992px) {
+    .panduan-grid {
+      grid-template-columns: 1fr;
+    }
+    .palette-guide-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

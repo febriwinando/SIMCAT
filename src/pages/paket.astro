@@ -1,0 +1,298 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { queryAll } from '../db';
+
+const categories = queryAll(`SELECT id, name, description, icon FROM exam_categories WHERE is_active = 1 ORDER BY sort_order ASC`);
+
+const packages = queryAll(`
+  SELECT 
+    p.id, p.slug, p.title, p.category_id, p.scoring_rule_id,
+    p.duration_minutes, p.total_questions, p.is_free, p.price,
+    p.description,
+    c.name as category_name,
+    r.name as scoring_rule_name, r.reference_source,
+    (SELECT COUNT(*) FROM package_questions WHERE package_id = p.id) as mapped_questions,
+    (SELECT COUNT(*) FROM exam_attempts WHERE package_id = p.id) as attempt_count
+  FROM exam_packages p
+  JOIN exam_categories c ON p.category_id = c.id
+  JOIN scoring_rules r ON p.scoring_rule_id = r.id
+  WHERE p.status = 'published'
+  ORDER BY p.id ASC
+`);
+---
+
+<Layout title="Katalog Paket Ujian CAT Nasional - SIMCAT 2026">
+  <div class="katalog-page-wrapper">
+    <div class="container">
+      <div class="katalog-header text-center">
+        <span class="badge-pill">STANDAR CAT BKN NASIONAL</span>
+        <h1 class="page-title">Katalog Paket Simulasi Ujian</h1>
+        <p class="page-subtitle">
+          Pilih paket tryout terstandarisasi untuk menguji kesiapan seleksi CPNS, PPPK, BUMN, dan Sekolah Kedinasan dengan algoritma penilaian resmi.
+        </p>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filter-row">
+        <button class="cat-pill active" data-filter="all">Semua Paket ({packages.length})</button>
+        {categories.map((c) => (
+          <button class="cat-pill" data-filter={c.id}>
+            {c.icon} {c.name}
+          </button>
+        ))}
+      </div>
+
+      <!-- Packages Grid -->
+      <div class="packages-grid">
+        {packages.map((pkg) => (
+          <div class="pkg-card glass-panel" data-category={pkg.category_id}>
+            <div class="pkg-card-top">
+              <span class="pkg-category-tag">{pkg.category_name}</span>
+              <span class="pkg-free-tag">{pkg.is_free ? 'GRATIS' : 'PRO'}</span>
+            </div>
+
+            <h3 class="pkg-title">{pkg.title}</h3>
+            <p class="pkg-desc">{pkg.description || 'Simulasi ujian CAT interaktif sesuai format BKN.'}</p>
+
+            <div class="pkg-meta-grid">
+              <div class="pmg-item">
+                <span class="pmg-label">⏱️ Durasi:</span>
+                <span class="pmg-val">{pkg.duration_minutes} Menit</span>
+              </div>
+              <div class="pmg-item">
+                <span class="pmg-label">❓ Jumlah Soal:</span>
+                <span class="pmg-val">{pkg.total_questions} Butir</span>
+              </div>
+              <div class="pmg-item">
+                <span class="pmg-label">🎯 Standar Nilai:</span>
+                <span class="pmg-val text-cyan">{pkg.scoring_rule_name}</span>
+              </div>
+              <div class="pmg-item">
+                <span class="pmg-label">👥 Telah Diikuti:</span>
+                <span class="pmg-val text-green">{pkg.attempt_count} Peserta</span>
+              </div>
+            </div>
+
+            <div class="pkg-legal-note">
+              Rujukan: {pkg.reference_source}
+            </div>
+
+            <div class="pkg-card-actions">
+              <a href={`/pembahasan/${pkg.slug}`} class="btn btn-secondary">
+                Lihat Kunci
+              </a>
+              <a href={`/simulasi/${pkg.slug}`} class="btn btn-primary">
+                Mulai Ujian CAT
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .katalog-page-wrapper {
+    padding: 40px 0 80px;
+  }
+
+  .katalog-header {
+    max-width: 680px;
+    margin: 0 auto 36px;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .category-filter-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .cat-pill {
+    padding: 8px 18px;
+    border-radius: 99px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cat-pill:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .cat-pill.active {
+    background: #00c2ff;
+    color: #080c14;
+    border-color: #00c2ff;
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .pkg-card {
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+  }
+
+  .pkg-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 194, 255, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .pkg-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .pkg-category-tag {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+  }
+
+  .pkg-free-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+
+  .pkg-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 8px;
+  }
+
+  .pkg-desc {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin: 0 0 18px;
+  }
+
+  .pkg-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+  }
+
+  .pmg-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pmg-label {
+    color: #64748b;
+  }
+
+  .pmg-val {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .text-cyan { color: #00c2ff !important; }
+  .text-green { color: #10b981 !important; }
+
+  .pkg-legal-note {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .pkg-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    .packages-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const pills = document.querySelectorAll('.cat-pill');
+    const cards = document.querySelectorAll('.pkg-card');
+
+    pills.forEach((p) => {
+      p.addEventListener('click', () => {
+        pills.forEach((b) => b.classList.remove('active'));
+        p.classList.add('active');
+
+        const filter = p.getAttribute('data-filter');
+        cards.forEach((c) => {
+          if (filter === 'all' || c.getAttribute('data-category') === filter) {
+            c.style.display = 'flex';
+          } else {
+            c.style.display = 'none';
+          }
+        });
+      });
+    });
+  })();
+</script>

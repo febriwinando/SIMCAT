@@ -1,0 +1,564 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+// Fetch all graded attempts
+const attempts = queryAll(`
+  SELECT r.category_scores, r.total_score, r.is_passed, r.accuracy_percent
+  FROM exam_results r
+  ORDER BY r.id DESC
+`);
+
+// Aggregate subtests performance
+const subtestStats: Record<string, { name: string; totalScore: number; passingGrade: number; count: number; passCount: number; maxScore: number }> = {};
+
+attempts.forEach((att) => {
+  if (att.category_scores) {
+    try {
+      const breakdown = JSON.parse(att.category_scores);
+      Object.keys(breakdown).forEach((code) => {
+        const item = breakdown[code];
+        if (!subtestStats[code]) {
+          subtestStats[code] = {
+            name: item.name || code,
+            totalScore: 0,
+            passingGrade: item.passingGrade || 0,
+            count: 0,
+            passCount: 0,
+            maxScore: code === 'TKP' ? 225 : (code === 'TIU' ? 175 : 150)
+          };
+        }
+        subtestStats[code].totalScore += item.score || 0;
+        subtestStats[code].count += 1;
+        if (item.isPassed) subtestStats[code].passCount += 1;
+      });
+    } catch (e) {}
+  }
+});
+
+const subtestList = Object.keys(subtestStats).map((code) => {
+  const s = subtestStats[code];
+  const avg = s.count > 0 ? Math.round((s.totalScore / s.count) * 10) / 10 : 0;
+  const passRate = s.count > 0 ? Math.round((s.passCount / s.count) * 100) : 0;
+  const gapToPg = Math.round((avg - s.passingGrade) * 10) / 10;
+  return {
+    code,
+    name: s.name,
+    avgScore: avg,
+    passingGrade: s.passingGrade,
+    maxScore: s.maxScore,
+    passRate,
+    gapToPg,
+    isSafe: gapToPg >= 0,
+    progressPercent: Math.min(100, Math.round((avg / s.maxScore) * 100))
+  };
+});
+---
+
+<Layout title="Analisis Kelemahan & Evaluasi Subtes - SIMCAT 2026">
+  <div class="dashboard-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="dash-breadcrumb">
+        <a href="/dashboard">Dashboard</a>
+        <span>/</span>
+        <span>Analisis Kelemahan</span>
+      </div>
+
+      <div class="page-header-row">
+        <div>
+          <h1 class="page-title">Analisis Kelemahan & Peta Kesiapan</h1>
+          <p class="page-subtitle">Evaluasi diagnostik kemampuan per materi ujian berdasarkan data riwayat simulasi Anda.</p>
+        </div>
+        <a href="/simulasi" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Drilling Soal
+        </a>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="dash-tabs-bar">
+        <a href="/dashboard" class="dash-tab">Ringkasan Belajar</a>
+        <a href="/dashboard/riwayat" class="dash-tab">Riwayat Ujian</a>
+        <a href="/dashboard/analisis" class="dash-tab active">Analisis Kelemahan</a>
+        <a href="/dashboard/pembelian" class="dash-tab">Paket Pro & Tryout Akbar</a>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="analysis-grid">
+        <!-- Subtests Diagnostics List -->
+        <div class="main-analysis-col">
+          <div class="glass-panel content-box">
+            <div class="box-header">
+              <h2 class="box-title">Diagnosa Pencapaian Passing Grade per Subtes</h2>
+              <p class="box-desc">Perbandingan rata-rata nilai Anda terhadap ambang batas kelulusan resmi.</p>
+            </div>
+
+            {subtestList.length > 0 ? (
+              <div class="subtests-diag-list">
+                {subtestList.map((sub) => (
+                  <div class="diag-card">
+                    <div class="diag-header">
+                      <div>
+                        <div class="diag-title-row">
+                          <span class="diag-code-pill">{sub.code}</span>
+                          <h3 class="diag-name">{sub.name}</h3>
+                        </div>
+                        <span class="diag-target-text">
+                          Passing Grade: <strong>{sub.passingGrade}</strong> (Maks. {sub.maxScore})
+                        </span>
+                      </div>
+
+                      <div class="diag-score-badge">
+                        <span class="diag-avg-label">Rata-rata Anda:</span>
+                        <span class={`diag-avg-num ${sub.isSafe ? 'text-green' : 'text-amber'}`}>
+                          {sub.avgScore}
+                        </span>
+                        <span class={`diag-status-pill ${sub.isSafe ? 'pill-safe' : 'pill-alert'}`}>
+                          {sub.isSafe ? `+${sub.gapToPg} di atas PG` : `${sub.gapToPg} di bawah PG`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="diag-bar-track">
+                      <div
+                        class={`diag-bar-fill ${sub.isSafe ? 'fill-green' : 'fill-amber'}`}
+                        style={`width: ${sub.progressPercent}%;`}
+                      ></div>
+                      <div
+                        class="pg-marker"
+                        style={`left: ${Math.round((sub.passingGrade / sub.maxScore) * 100)}%;`}
+                        title={`Ambang Batas PG: ${sub.passingGrade}`}
+                      >
+                        <span class="pg-marker-label">PG {sub.passingGrade}</span>
+                      </div>
+                    </div>
+
+                    <!-- Recommendation Note -->
+                    <div class="diag-recommendation">
+                      <span class="recom-icon">💡</span>
+                      <span class="recom-text">
+                        {sub.code === 'TWK' && (
+                          sub.isSafe 
+                            ? 'TWK Anda sudah stabil. Pertahankan hafalan pasal UUD 1945 dan penalaran integrasi nasional.'
+                            : 'Fokuskan drilling pada soal penalaran Bela Negara dan Implementasi Pancasila dalam situasi kerja nyata.'
+                        )}
+                        {sub.code === 'TIU' && (
+                          sub.isSafe
+                            ? 'Kemampuan logika dan numerik Anda sangat baik. Perbanyak latihan silogisme dan figural analitis.'
+                            : 'Tingkatkan kecepatan berhitung cepat (deret angka & pecahan) serta eliminasi opsi silogisme bertingkat.'
+                        )}
+                        {sub.code === 'TKP' && (
+                          sub.isSafe
+                            ? 'Orientasi pelayanan dan jejaring kerja Anda prima. Pertahankan konsistensi jawaban skala 5.'
+                            : 'Prioritaskan opsi yang menunjukkan inisiatif perbaikan pelayanan publik tanpa menyalahkan prosedur birokrasi.'
+                        )}
+                        {!['TWK', 'TIU', 'TKP'].includes(sub.code) && (
+                          'Perbanyak simulasi soal HOTS pada materi ini untuk meningkatkan konsistensi skor di atas ambang batas.'
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h3>Belum Ada Data Simulasi</h3>
+                <p>Kerjakan minimal 1 sesi simulasi CAT untuk mengaktifkan grafik peta diagnostik kelemahan Anda.</p>
+                <a href="/simulasi" class="btn btn-primary" style="margin-top: 16px;">Mulai Ujian Sekarang</a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Strategy & Priority Recommendations -->
+        <div class="side-analysis-col">
+          <div class="glass-panel content-box">
+            <h3 class="box-title">Strategi Pembagian Waktu (100 Menit)</h3>
+            <p class="box-desc">Alokasi waktu pengerjaan 110 butir soal SKD CPNS standar BKN:</p>
+
+            <div class="time-strategy-list">
+              <div class="ts-item">
+                <div class="ts-header">
+                  <span class="ts-title">1. TKP (45 Soal)</span>
+                  <span class="ts-time">30 Menit</span>
+                </div>
+                <p class="ts-desc">Kerjakan pertama kali saat konsentrasi masih segar. Tidak ada minus, targetkan skala 5 pada tiap opsi.</p>
+              </div>
+
+              <div class="ts-item">
+                <div class="ts-header">
+                  <span class="ts-title">2. TWK (30 Soal)</span>
+                  <span class="ts-time">25 Menit</span>
+                </div>
+                <p class="ts-desc">Soal berbasis wacana dan hafalan cepat. Lewati segera jika ragu dan tandai warna kuning.</p>
+              </div>
+
+              <div class="ts-item">
+                <div class="ts-header">
+                  <span class="ts-title">3. TIU (35 Soal)</span>
+                  <span class="ts-time">35 Menit</span>
+                </div>
+                <p class="ts-desc">Dibutuhkan perhitungan akurat. Mulai dari analogi kata, silogisme, baru numerik bertingkat.</p>
+              </div>
+
+              <div class="ts-item">
+                <div class="ts-header">
+                  <span class="ts-title">4. Review Ragu-ragu</span>
+                  <span class="ts-time">10 Menit</span>
+                </div>
+                <p class="ts-desc">Periksa kembali tombol kuning pada palet nomor soal sebelum menekan tombol Selesai Ujian.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-panel content-box" style="margin-top: 20px;">
+            <h3 class="box-title">Target Passing Grade Resmi 2026</h3>
+            <div class="rule-badge-box">
+              <span class="badge-source">KepmenPAN-RB No. 321 Tahun 2024</span>
+              <ul class="rule-list">
+                <li><strong>TWK:</strong> 65 Poin (Minimal 13 soal benar)</li>
+                <li><strong>TIU:</strong> 80 Poin (Minimal 16 soal benar)</li>
+                <li><strong>TKP:</strong> 166 Poin (Rata-rata 3.7 poin per soal)</li>
+                <li><strong>Nilai Maksimal:</strong> 550 Poin</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .dashboard-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .dash-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .dash-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .dash-tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .dash-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .dash-tab:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .dash-tab.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+
+  .content-box {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-header {
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .box-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .subtests-diag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .diag-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .diag-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .diag-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .diag-code-pill {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #00c2ff;
+    color: #080c14;
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: monospace;
+  }
+
+  .diag-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .diag-target-text {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .diag-target-text strong {
+    color: #cbd5e1;
+  }
+
+  .diag-score-badge {
+    text-align: right;
+  }
+
+  .diag-avg-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    display: block;
+  }
+
+  .diag-avg-num {
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-family: monospace;
+    line-height: 1.1;
+  }
+
+  .text-green { color: #10b981 !important; }
+  .text-amber { color: #f59e0b !important; }
+
+  .diag-status-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .pill-safe {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+  }
+
+  .pill-alert {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+  }
+
+  .diag-bar-track {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 99px;
+    margin: 18px 0 24px;
+  }
+
+  .diag-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  .fill-green { background: linear-gradient(90deg, #10b981, #34d399); }
+  .fill-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+  .pg-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: #ffffff;
+    box-shadow: 0 0 6px #ffffff;
+  }
+
+  .pg-marker-label {
+    position: absolute;
+    top: 16px;
+    transform: translateX(-50%);
+    font-size: 0.68rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    font-family: monospace;
+  }
+
+  .diag-recommendation {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    margin-top: 10px;
+  }
+
+  .recom-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .recom-text {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+  }
+
+  .time-strategy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .ts-item {
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .ts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .ts-title {
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+
+  .ts-time {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #00c2ff;
+    font-family: monospace;
+  }
+
+  .ts-desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .rule-badge-box {
+    margin-top: 14px;
+  }
+
+  .badge-source {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0, 194, 255, 0.15);
+    color: #38bdf8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .rule-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  @media (max-width: 992px) {
+    .analysis-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

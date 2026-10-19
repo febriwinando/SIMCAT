@@ -1,0 +1,232 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+  {
+    cat: 'teknis',
+    q: 'Apa yang terjadi jika koneksi internet terputus di tengah-tengah simulasi ujian?',
+    a: 'Jangan panik! Seluruh jawaban yang telah Anda klik tersimpan secara realtime di database server SIMCAT. Ketika koneksi internet Anda kembali pulih, Anda dapat membuka kembali halaman simulasi atau me-refresh halaman, dan lembar jawaban Anda akan otomatis sinkron kembali sesuai nomor terakhir yang Anda kerjakan.'
+  },
+  {
+    cat: 'teknis',
+    q: 'Apakah timer ujian tetap berjalan jika saya menutup browser?',
+    a: 'Ya. Mesin CAT SIMCAT menggunakan Server-Authoritative Timer yang berjalan di server pusat untuk menjamin integritas simulasi realistis seperti ujian CAT BKN yang sesungguhnya. Waktu akan terus berkurang hingga batas durasi tercapai.'
+  },
+  {
+    cat: 'nilai',
+    q: 'Bagaimana cara perhitungan nilai TKP, TWK, dan TIU pada simulasi CPNS SKD?',
+    a: 'Sesuai regulasi KepmenPAN-RB No. 321/2024: Pada subtes TWK dan TIU, setiap jawaban benar bernilai +5 dan jawaban salah bernilai 0. Pada subtes TKP, seluruh pilihan A hingga E memiliki bobot nilai berjenjang 1, 2, 3, 4, dan 5 (tidak ada minus).'
+  },
+  {
+    cat: 'nilai',
+    q: 'Kapan saya dapat melihat kunci jawaban dan pembahasan lengkap?',
+    a: 'Demi menjaga validitas pengujian, kunci jawaban dan pembahasan trik cepat baru dapat diakses setelah Anda menekan tombol "Selesai Ujian" dan status sesi Anda ter-finalisasi (graded). Anda dapat melihatnya di halaman Scorecard atau menu Pembahasan.'
+  },
+  {
+    cat: 'akun',
+    q: 'Apakah hasil tryout saya dapat dilihat kembali di lain hari?',
+    a: 'Tentu saja. Seluruh sesi ujian yang telah Anda selesaikan tersimpan secara permanen pada tab "Riwayat Ujian" di Dashboard Akun Anda, lengkap dengan rincian skor per subtes, durasi waktu, dan rasio akurasi.'
+  },
+  {
+    cat: 'paket',
+    q: 'Apakah paket tryout gratis memiliki batas waktu kedaluwarsa?',
+    a: 'Paket Dasar Gratis dapat diakses kapan saja tanpa batas masa aktif. Untuk paket Tryout Akbar Nasional atau keanggotaan VIP, Anda akan mendapatkan akses ke bank soal HOTS eksklusif dan live leaderboard perangkingan nasional.'
+  }
+];
+---
+
+<Layout title="Pusat Bantuan & FAQ - SIMCAT 2026">
+  <div class="bantuan-page-wrapper">
+    <div class="container">
+      <div class="bantuan-header text-center">
+        <span class="badge-pill">PUSAT BANTUAN PESERTA</span>
+        <h1 class="page-title">Pertanyaan Umum & Panduan Solusi Teknis</h1>
+        <p class="page-subtitle">
+          Temukan jawaban cepat seputar tata cara pengerjaan ujian CAT, kebijakan penilaian, dan penanganan kendala teknis simulasi.
+        </p>
+      </div>
+
+      <!-- FAQ Container -->
+      <div class="faq-container glass-panel">
+        <div class="faq-list">
+          {faqs.map((faq, idx) => (
+            <div class="faq-card" id={`faq-${idx}`}>
+              <button class="faq-question-btn" onclick={`toggleFaq(${idx})`}>
+                <span class="fq-title">{faq.q}</span>
+                <span class="fq-arrow" id={`arrow-${idx}`}>▼</span>
+              </button>
+              <div class="faq-answer-panel" id={`answer-${idx}`} style="display: none;">
+                <p>{faq.a}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Support Contact Cards -->
+      <div class="contact-support-grid">
+        <div class="contact-box glass-panel">
+          <div class="cb-icon">💬</div>
+          <h3>Helpdesk WhatsApp Layanan</h3>
+          <p>Butuh bantuan aktivasi paket atau konfirmasi kendala ujian secara cepat? Tim kami siap melayani Anda.</p>
+          <a href="https://wa.me/6281234567890?text=Halo%20Admin%20SIMCAT%2C%20saya%20memerlukan%20bantuan" target="_blank" class="btn btn-primary" style="margin-top: 14px;">
+            Hubungi Customer Care ↗
+          </a>
+        </div>
+
+        <div class="contact-box glass-panel">
+          <div class="cb-icon">📧</div>
+          <h3>Konsultasi Tim Akademik</h3>
+          <p>Pertanyaan seputar validasi butir soal, rujukan regulasi, atau koreksi kunci jawaban dapat diajukan ke dewan editorial.</p>
+          <a href="mailto:support@simcat.id" class="btn btn-secondary" style="margin-top: 14px;">
+            Kirim Surel ke support@simcat.id ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .bantuan-page-wrapper {
+    padding: 40px 0 80px;
+  }
+
+  .bantuan-header {
+    max-width: 720px;
+    margin: 0 auto 36px;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .faq-container {
+    padding: 32px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 40px;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .faq-card {
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+
+  .faq-question-btn {
+    width: 100%;
+    padding: 18px 20px;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .fq-arrow {
+    color: #00c2ff;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+  }
+
+  .faq-answer-panel {
+    padding: 0 20px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .faq-answer-panel p {
+    color: #cbd5e1;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin: 12px 0 0;
+  }
+
+  .contact-support-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .contact-box {
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .cb-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+  }
+
+  .contact-box h3 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin: 0 0 6px;
+  }
+
+  .contact-box p {
+    color: #94a3b8;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .contact-support-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  function toggleFaq(idx) {
+    const panel = document.getElementById(`answer-${idx}`);
+    const arrow = document.getElementById(`arrow-${idx}`);
+    if (panel.style.display === 'none') {
+      panel.style.display = 'block';
+      arrow.textContent = '▲';
+    } else {
+      panel.style.display = 'none';
+      arrow.textContent = '▼';
+    }
+  }
+</script>

@@ -1,0 +1,748 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const pendingQuestions = queryAll(`
+  SELECT 
+    q.id, q.uuid, q.category_id, q.subject_id,
+    q.question_text, q.stimulus_text, q.difficulty,
+    q.editorial_status, q.created_at,
+    c.name as category_name, s.name as subject_name, s.code as subject_code
+  FROM questions q
+  JOIN exam_categories c ON q.category_id = c.id
+  JOIN subjects s ON q.subject_id = s.id
+  WHERE q.editorial_status IN ('review_pending', 'draft', 'revision_required')
+  ORDER BY q.id ASC
+`);
+
+const recentReviews = queryAll(`
+  SELECT r.id, r.question_id, r.status, r.notes, r.created_at,
+         u.email as reviewer_email, p.full_name as reviewer_name,
+         q.question_text
+  FROM question_reviews r
+  JOIN questions q ON r.question_id = q.id
+  JOIN users u ON r.reviewer_id = u.id
+  LEFT JOIN user_profiles p ON u.id = p.user_id
+  ORDER BY r.id DESC
+  LIMIT 5
+`);
+---
+
+<Layout title="Portal Review Editorial Soal - SIMCAT Admin">
+  <div class="admin-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="admin-breadcrumb">
+        <a href="/admin">Backoffice</a>
+        <span>/</span>
+        <span>Review Editorial Soal</span>
+      </div>
+
+      <div class="admin-page-header">
+        <div>
+          <h1 class="page-title">Portal Verifikasi & Review Editorial</h1>
+          <p class="page-subtitle">Pemeriksaan kualitas mutu butir soal, akurasi kunci, pembobotan skor, dan keabsahan rujukan regulasi.</p>
+        </div>
+      </div>
+
+      <!-- Submenu Navigation -->
+      <div class="admin-nav-bar">
+        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item">Bank Soal</a>
+        <a href="/admin/review-soal" class="admin-nav-item active">
+          Review Editorial
+          {pendingQuestions.length > 0 && <span class="badge-count">{pendingQuestions.length}</span>}
+        </a>
+        <a href="/admin/paket-ujian" class="admin-nav-item">Paket Ujian & Rules</a>
+        <a href="/admin/audit-log" class="admin-nav-item">Audit Log</a>
+      </div>
+
+      <div class="review-layout-grid">
+        <!-- Main: Review Queue -->
+        <div class="review-queue-col">
+          <div class="glass-panel content-box">
+            <div class="box-header">
+              <h2 class="box-title">Antrean Butir Soal Perlu Ditinjau ({pendingQuestions.length})</h2>
+              <p class="box-desc">Soal yang diajukan oleh penyusun untuk divalidasi sebelum dipublikasikan ke peserta.</p>
+            </div>
+
+            {pendingQuestions.length > 0 ? (
+              <div class="review-cards-list">
+                {pendingQuestions.map((q) => (
+                  <div class="review-item-card" id={`q-card-${q.id}`}>
+                    <div class="ric-top">
+                      <div class="ric-meta">
+                        <span class="sub-badge">{q.subject_code}</span>
+                        <span class="cat-label">{q.category_name}</span>
+                        <span class={`status-badge status-${q.editorial_status}`}>{q.editorial_status}</span>
+                      </div>
+                      <span class="diff-stars">{'★'.repeat(q.difficulty)}{'☆'.repeat(5 - q.difficulty)}</span>
+                    </div>
+
+                    {q.stimulus_text && (
+                      <div class="ric-stimulus">
+                        <strong>Wacana / Kasus:</strong> {q.stimulus_text}
+                      </div>
+                    )}
+
+                    <h3 class="ric-question-text">{q.question_text}</h3>
+
+                    <!-- Review Actions Form -->
+                    <div class="ric-review-form">
+                      <input
+                        type="text"
+                        id={`notes-${q.id}`}
+                        class="review-notes-input"
+                        placeholder="Catatan review (alasan persetujuan / revisi)..."
+                      />
+                      <div class="review-btn-group">
+                        <button
+                          class="btn btn-secondary btn-sm"
+                          data-qid={q.id}
+                          onclick="viewQuestionDetail(this)"
+                        >
+                          Lihat Opsi & Kunci
+                        </button>
+                        <button
+                          class="btn btn-danger btn-sm"
+                          data-qid={q.id}
+                          onclick="submitReviewAction(this, 'revision_required')"
+                        >
+                          Minta Revisi
+                        </button>
+                        <button
+                          class="btn btn-primary btn-sm"
+                          data-qid={q.id}
+                          onclick="submitReviewAction(this, 'published')"
+                        >
+                          ✓ Setujui & Publish
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <h3>Semua Soal Telah Selesai Ditinjau</h3>
+                <p>Tidak ada butir soal dalam antrean review saat ini. Seluruh bank soal aktif telah terverifikasi.</p>
+                <a href="/admin/bank-soal" class="btn btn-secondary" style="margin-top: 16px;">
+                  Buka Bank Soal
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Side: Editorial Checklist & Recent Reviews -->
+        <div class="review-side-col">
+          <div class="glass-panel content-box">
+            <h3 class="box-title">Pedoman Standardisasi Reviewer</h3>
+            <ul class="checklist-list">
+              <li>
+                <span class="chk-box">✓</span>
+                <div>
+                  <strong>Objektivitas Opsi:</strong>
+                  <p>Hindari opsi yang bermakna ganda atau tidak memiliki rujukan kunci yang sahih.</p>
+                </div>
+              </li>
+              <li>
+                <span class="chk-box">✓</span>
+                <div>
+                  <strong>Skala Pembobotan TKP:</strong>
+                  <p>Pastikan setiap opsi A-E memiliki bobot berjenjang 1, 2, 3, 4, dan 5 tanpa angka kembar.</p>
+                </div>
+              </li>
+              <li>
+                <span class="chk-box">✓</span>
+                <div>
+                  <strong>Standar HOTS (Higher Order Thinking):</strong>
+                  <p>Materi wacana harus menguji analisis dan sintesis situasi birokrasi nyata, bukan sekadar hafalan.</p>
+                </div>
+              </li>
+              <li>
+                <span class="chk-box">✓</span>
+                <div>
+                  <strong>Kualitas Trik Cepat & Pembahasan:</strong>
+                  <p>Setiap butir wajib memuat rasionalisasi logis serta trik waktu untuk efisiensi pengerjaan ujian.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="glass-panel content-box" style="margin-top: 20px;">
+            <h3 class="box-title">Riwayat Keputusan Reviewer</h3>
+            <div class="recent-reviews-stream">
+              {recentReviews.length > 0 ? (
+                recentReviews.map((rev) => (
+                  <div class="rr-item">
+                    <div class="rr-top">
+                      <span class={`status-badge status-${rev.status}`}>{rev.status}</span>
+                      <span class="rr-date">
+                        {new Date(rev.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                    <p class="rr-soal">Soal #{rev.question_id}: {rev.question_text.substring(0, 60)}...</p>
+                    <p class="rr-notes">"{rev.notes || 'Disetujui tanpa catatan khusus.'}"</p>
+                    <span class="rr-reviewer">Oleh: {rev.reviewer_name || rev.reviewer_email}</span>
+                  </div>
+                ))
+              ) : (
+                <p class="text-dim">Belum ada keputusan review tercatat.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="detail-modal" style="display: none;">
+    <div class="modal-card-lg glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title">Rincian Butir Soal untuk Review</h3>
+        <button class="modal-close-btn" onclick="closeDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body-scroll" id="detail-modal-body">
+        <div class="loading-box">Memuat detail soal...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .admin-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .admin-nav-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .admin-nav-item:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .admin-nav-item.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .badge-count {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+
+  .review-layout-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+
+  .content-box {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .box-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .review-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .review-item-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ric-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ric-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sub-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #00c2ff;
+    color: #080c14;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: monospace;
+  }
+
+  .cat-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .status-published { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+  .status-review_pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  .status-revision_required { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+  .status-draft { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+
+  .diff-stars {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+  }
+
+  .ric-stimulus {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid #00c2ff;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+  }
+
+  .ric-question-text {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  .ric-review-form {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .review-notes-input {
+    width: 100%;
+    padding: 9px 14px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.85rem;
+    outline: none;
+  }
+
+  .review-notes-input:focus {
+    border-color: #00c2ff;
+  }
+
+  .review-btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .btn-danger:hover {
+    background: #ef4444;
+    color: #ffffff;
+  }
+
+  /* Checklist */
+  .checklist-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .checklist-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .chk-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .checklist-list strong {
+    color: #ffffff;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .checklist-list p {
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .recent-reviews-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .rr-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .rr-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .rr-date {
+    font-size: 0.72rem;
+    color: #64748b;
+  }
+
+  .rr-soal {
+    color: #e2e8f0;
+    font-size: 0.82rem;
+    margin: 0 0 2px;
+  }
+
+  .rr-notes {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-style: italic;
+    margin: 0 0 4px;
+  }
+
+  .rr-reviewer {
+    font-size: 0.72rem;
+    color: #00c2ff;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+  }
+
+  .empty-state h3 {
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+
+  /* Modals */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-card-lg {
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.6rem;
+    cursor: pointer;
+  }
+
+  .modal-body-scroll {
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 992px) {
+    .review-layout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  async function submitReviewAction(btn, status) {
+    const qid = btn.getAttribute('data-qid');
+    const notesInput = document.getElementById(`notes-${qid}`);
+    const notes = notesInput ? notesInput.value.trim() : '';
+
+    if (status === 'revision_required' && !notes) {
+      alert('Wajib mengisi catatan perbaikan saat meminta revisi butir soal.');
+      if (notesInput) notesInput.focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+
+    try {
+      const res = await fetch('/api/admin/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: parseInt(qid, 10),
+          reviewerId: 3, // reviewer demo user ID
+          status: status,
+          notes: notes
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message || 'Status soal berhasil diperbarui.');
+        const card = document.getElementById(`q-card-${qid}`);
+        if (card) {
+          card.style.opacity = '0.4';
+          card.innerHTML = `<div style="padding: 16px; color: #34d399; font-weight: 700; text-align: center;">✓ Soal #${qid} telah berhasil ditinjau (${status})</div>`;
+        }
+      } else {
+        alert('Gagal: ' + (data.error || 'Terjadi kesalahan'));
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan koneksi.');
+      btn.disabled = false;
+    }
+  }
+
+  function openDetailModal() {
+    document.getElementById('detail-modal').style.display = 'flex';
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+  }
+
+  async function viewQuestionDetail(btn) {
+    const qid = btn.getAttribute('data-qid');
+    openDetailModal();
+    const body = document.getElementById('detail-modal-body');
+    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8;">Memuat detail butir soal...</div>';
+
+    try {
+      const res = await fetch(`/api/admin/questions?id=${qid}`);
+      const data = await res.json();
+      if (data.success && data.question) {
+        const q = data.question;
+        body.innerHTML = `
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <span class="sub-badge">${q.subject_code}</span>
+            <span class="cat-label">${q.category_name}</span>
+            <span class="status-badge status-${q.editorial_status}">${q.editorial_status}</span>
+          </div>
+
+          ${q.stimulus_text ? `
+            <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.88rem; color: #cbd5e1; border-left: 3px solid #00c2ff;">
+              <strong style="color: #00c2ff;">Stimulus:</strong><br/>
+              ${q.stimulus_text}
+            </div>
+          ` : ''}
+
+          <h3 style="color: #ffffff; font-size: 1.15rem; margin-bottom: 16px; line-height: 1.45;">
+            ${q.question_text}
+          </h3>
+
+          <h4 style="color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px;">
+            Opsi Jawaban & Pembobotan:
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+            ${(q.options || []).map(opt => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 8px; background: ${opt.is_correct ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.03)'}; border: 1px solid ${opt.is_correct ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.06)'};">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <strong style="color: ${opt.is_correct ? '#34d399' : '#ffffff'};">${opt.option_key}.</strong>
+                  <span style="color: #e2e8f0;">${opt.option_text}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  ${opt.is_correct ? '<span style="color: #34d399; font-size: 0.75rem; font-weight: 700;">✓ KUNCI</span>' : ''}
+                  <span style="font-family: monospace; font-size: 0.85rem; color: #00c2ff; font-weight: 700;">Bobot: ${opt.score_weight}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${q.explanation ? `
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06);">
+              <h4 style="color: #00c2ff; margin: 0 0 8px; font-size: 0.95rem;">Pembahasan Terverifikasi:</h4>
+              <p style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin: 0 0 10px;">
+                ${q.explanation.explanation_text}
+              </p>
+              ${q.explanation.quick_trick ? `<div style="font-size: 0.82rem; color: #fbbf24; margin-bottom: 6px;">⚡ Trik Cepat: ${q.explanation.quick_trick}</div>` : ''}
+              ${q.explanation.reference_source ? `<div style="font-size: 0.78rem; color: #64748b;">📖 Rujukan: ${q.explanation.reference_source}</div>` : ''}
+            </div>
+          ` : ''}
+        `;
+      }
+    } catch (e) {
+      body.innerHTML = '<div style="color: #ef4444; padding: 20px;">Gagal memuat detail soal.</div>';
+    }
+  }
+</script>

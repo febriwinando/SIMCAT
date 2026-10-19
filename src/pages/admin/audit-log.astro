@@ -1,0 +1,269 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const logs = queryAll(`
+  SELECT 
+    l.id, l.user_id, l.action, l.resource_type, l.resource_id,
+    l.details, l.ip_address, l.created_at,
+    u.email as user_email, p.full_name as user_name, r.name as role_name
+  FROM audit_logs l
+  LEFT JOIN users u ON l.user_id = u.id
+  LEFT JOIN roles r ON u.role_id = r.id
+  LEFT JOIN user_profiles p ON u.id = p.user_id
+  ORDER BY l.id DESC
+  LIMIT 100
+`);
+---
+
+<Layout title="Audit Trail & Keamanan Sistem - SIMCAT Admin">
+  <div class="admin-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="admin-breadcrumb">
+        <a href="/admin">Backoffice</a>
+        <span>/</span>
+        <span>Audit Log</span>
+      </div>
+
+      <div class="admin-page-header">
+        <div>
+          <h1 class="page-title">Rekam Jejak Audit & Keamanan Sistem</h1>
+          <p class="page-subtitle">Logging persisten seluruh tindakan administratif, pembaruan bank soal, dan eksekusi attempt ujian.</p>
+        </div>
+      </div>
+
+      <!-- Submenu Navigation -->
+      <div class="admin-nav-bar">
+        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item">Bank Soal</a>
+        <a href="/admin/review-soal" class="admin-nav-item">Review Editorial</a>
+        <a href="/admin/paket-ujian" class="admin-nav-item">Paket Ujian & Rules</a>
+        <a href="/admin/audit-log" class="admin-nav-item active">Audit Log ({logs.length})</a>
+      </div>
+
+      <!-- Audit Logs Table -->
+      <div class="audit-table-card glass-panel">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;">ID Log</th>
+                <th style="width: 160px;">Waktu & Tanggal</th>
+                <th style="width: 140px;">Aksi Sistem</th>
+                <th style="width: 130px;">Tipe Entitas</th>
+                <th>Rincian Catatan Perubahan</th>
+                <th style="width: 180px;">Pelaku / Akun</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr>
+                  <td class="font-mono text-dim">#{log.id}</td>
+                  <td>
+                    <div class="log-time-cell">
+                      <span class="lt-date">
+                        {new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span class="lt-clock">
+                        {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="action-pill font-mono">{log.action}</span>
+                  </td>
+                  <td>
+                    <span class="resource-tag">
+                      {log.resource_type} #{log.resource_id}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="log-details-text">
+                      {log.details || '-'}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="log-user-cell">
+                      <span class="lu-email">{log.user_email || 'System Daemon'}</span>
+                      <span class="lu-role">{log.role_name || 'Automated Engine'}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .admin-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .admin-nav-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .admin-nav-item:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .admin-nav-item.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .audit-table-card {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .admin-table th {
+    padding: 12px 14px;
+    text-align: left;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+
+  .admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+  }
+
+  .admin-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .log-time-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .lt-date {
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .lt-clock {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-family: monospace;
+  }
+
+  .action-pill {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(0, 194, 255, 0.12);
+    color: #00c2ff;
+    font-size: 0.75rem;
+  }
+
+  .resource-tag {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .log-details-text {
+    color: #e2e8f0;
+    line-height: 1.4;
+  }
+
+  .log-user-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .lu-email {
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .lu-role {
+    color: #94a3b8;
+    font-size: 0.72rem;
+  }
+
+  .text-dim { color: #64748b !important; }
+</style>

@@ -1,0 +1,552 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { allPackages, getExamPackageBySlug, type ExamPackage } from '../../data';
+import { queryOne, queryAll } from '../../db';
+
+const { slug } = Astro.params;
+let pkg: any = getExamPackageBySlug(slug as string);
+
+if (!pkg) {
+  const dbPkg = queryOne(`
+    SELECT p.*, c.name as category_name
+    FROM exam_packages p
+    JOIN exam_categories c ON p.category_id = c.id
+    WHERE p.slug = ?
+  `, [slug]);
+
+  if (dbPkg) {
+    const dbQuestions = queryAll(`
+      SELECT q.id, q.question_text, q.stimulus_text, s.code as subtest_code, s.name as subtest_name
+      FROM package_questions pq
+      JOIN questions q ON pq.question_id = q.id
+      JOIN subjects s ON q.subject_id = s.id
+      WHERE pq.package_id = ?
+      ORDER BY pq.sequence_order ASC
+    `, [dbPkg.id]);
+
+    const questionsWithOptions = dbQuestions.map((q) => {
+      const options = queryAll(`SELECT option_key, option_text, is_correct, score_weight FROM question_options WHERE question_id = ? ORDER BY option_key ASC`, [q.id]);
+      const exp = queryOne(`SELECT explanation_text, quick_trick, reference_source FROM question_explanations WHERE question_id = ?`, [q.id]);
+      const correctOpt = options.find((o: any) => o.is_correct === 1) || options[0];
+
+      return {
+        id: q.id,
+        subtestCode: q.subtest_code,
+        subtestName: q.subtest_name,
+        text: q.question_text,
+        stimulus: q.stimulus_text,
+        options: options.map((o: any) => ({ key: o.option_key, text: o.option_text })),
+        correctAnswer: correctOpt ? correctOpt.option_key : 'A',
+        explanation: exp ? exp.explanation_text : 'Pembahasan terverifikasi sesuai regulasi resmi.',
+        quickTrick: exp?.quick_trick || '',
+        reference: exp?.reference_source || ''
+      };
+    });
+
+    pkg = {
+      slug: dbPkg.slug,
+      title: dbPkg.title,
+      category: dbPkg.category_name,
+      badgeClass: 'badge-cpns',
+      yearEdition: 'Edisi 2026',
+      durationMinutes: dbPkg.duration_minutes,
+      passingGrades: [
+        { code: 'TWK', name: 'Tes Wawasan Kebangsaan', minScore: 65, maxScore: 150 },
+        { code: 'TIU', name: 'Tes Inteligensi Umum', minScore: 80, maxScore: 175 },
+        { code: 'TKP', name: 'Tes Karakteristik Pribadi', minScore: 166, maxScore: 225 }
+      ],
+      questions: questionsWithOptions
+    };
+  }
+}
+
+if (!pkg) {
+  return Astro.redirect('/simulasi');
+}
+---
+
+<Layout title={`Pembahasan Soal ${pkg.title} - SIMCAT 2026`}>
+  <div class="study-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb & Header -->
+      <div class="study-header">
+        <a href="/" class="back-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Kembali ke Dashboard
+        </a>
+        <div class="header-content">
+          <div class="header-tags">
+            <span class={`badge ${pkg.badgeClass}`}>{pkg.category}</span>
+            <span class="edition-tag">{pkg.yearEdition}</span>
+          </div>
+          <h1 class="study-title">Kunci Jawaban & Pembahasan Lengkap</h1>
+          <p class="study-subtitle">{pkg.title} • {pkg.questions.length} Butir Soal Terstandar</p>
+        </div>
+
+        <div class="study-cta-box glass-panel">
+          <div class="cta-info">
+            <span class="cta-label">Siap Menguji Kemampuan?</span>
+            <span class="cta-desc">Lakukan simulasi resmi dengan sistem waktu dan scoring CAT BKN.</span>
+          </div>
+          <a href={`/simulasi/${pkg.slug}`} class="btn btn-primary" id="btn-start-from-study">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Mulai Simulasi CAT
+          </a>
+        </div>
+      </div>
+
+      <!-- Filter Subtes -->
+      <div class="filter-controls-bar">
+        <div class="filter-pills" id="filter-pills">
+          <button class="filter-pill active" data-filter="all">Semua Soal ({pkg.questions.length})</button>
+          {pkg.passingGrades.map((pg) => (
+            <button class="filter-pill" data-filter={pg.code}>
+              {pg.name} ({pg.code})
+            </button>
+          ))}
+        </div>
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-question-input" placeholder="Cari materi soal (mis: Pancasila, debit, silogisme)..." />
+        </div>
+      </div>
+
+      <!-- Question Cards List -->
+      <div class="questions-list" id="questions-list-container">
+        {pkg.questions.map((q, idx) => (
+          <article class="study-question-card glass-panel" data-subtest={q.subtest} data-search={`${q.questionText} ${q.explanation} ${q.subtestLabel}`.toLowerCase()}>
+            <div class="sq-header">
+              <div class="sq-number-box">
+                <span class="sq-index">#{idx + 1}</span>
+                <span class="sq-subtest">{q.subtest} • {q.subtestLabel}</span>
+              </div>
+              <div class="sq-answer-badge">
+                <span class="sq-ans-lbl">Kunci Jawaban:</span>
+                <span class="sq-ans-key">{q.correctAnswer}</span>
+              </div>
+            </div>
+
+            <div class="sq-text">
+              {q.questionText}
+            </div>
+
+            <!-- Options -->
+            <div class="sq-options">
+              {q.options.map((opt) => {
+                const isCorrect = opt.key === q.correctAnswer;
+                return (
+                  <div class={`sq-option-item ${isCorrect ? 'correct' : ''}`}>
+                    <div class="sq-opt-key">{opt.key}</div>
+                    <div class="sq-opt-text">{opt.text}</div>
+                    <div class="sq-opt-score">
+                      Bobot: <strong>{opt.score}</strong>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <!-- Explanation Box -->
+            <div class="sq-explanation-box">
+              <div class="exp-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Pembahasan & Analisis:
+              </div>
+              <div class="exp-content">
+                {q.explanation}
+              </div>
+
+              {q.tipsTrick && (
+                <div class="sq-tips-box">
+                  <span class="tips-badge">💡 TRIK CEPAT & TIPS BKN:</span>
+                  <p class="tips-text">{q.tipsTrick}</p>
+                </div>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .study-page-wrapper {
+    padding: 40px 0 80px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+
+  .back-link:hover {
+    color: #38bdf8;
+    transform: translateX(-4px);
+  }
+
+  .study-header {
+    margin-bottom: 35px;
+  }
+
+  .header-tags {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .edition-tag {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .study-title {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    color: #ffffff;
+  }
+
+  .study-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .study-cta-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.25), rgba(17, 24, 39, 0.7));
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: var(--radius-md);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .cta-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .cta-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  /* Filter Controls */
+  .filter-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .filter-pill:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .filter-pill.active {
+    background: #3b82f6;
+    color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.35);
+  }
+
+  .search-input-wrapper {
+    position: relative;
+    min-width: 300px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+  }
+
+  .search-input-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: #ffffff;
+    font-size: 0.9rem;
+    outline: none;
+    font-family: var(--font-main);
+  }
+
+  .search-input-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  /* Question Cards */
+  .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .study-question-card {
+    padding: 24px;
+    border-radius: var(--radius-md);
+  }
+
+  .sq-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 16px;
+  }
+
+  .sq-number-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sq-index {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #38bdf8;
+  }
+
+  .sq-subtest {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .sq-answer-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+  }
+
+  .sq-ans-lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .sq-ans-key {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #34d399;
+  }
+
+  .sq-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #f3f4f6;
+    margin-bottom: 20px;
+    white-space: pre-line;
+  }
+
+  .sq-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .sq-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+  }
+
+  .sq-option-item.correct {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+  }
+
+  .sq-opt-key {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .sq-option-item.correct .sq-opt-key {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+  }
+
+  .sq-opt-text {
+    flex: 1;
+    font-size: 0.95rem;
+    color: #e5e7eb;
+  }
+
+  .sq-opt-score {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+
+  .sq-option-item.correct .sq-opt-score strong {
+    color: #34d399;
+  }
+
+  .sq-explanation-box {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+  }
+
+  .exp-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 8px;
+  }
+
+  .exp-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #d1d5db;
+    margin-bottom: 12px;
+  }
+
+  .sq-tips-box {
+    background: rgba(245, 158, 11, 0.08);
+    border-left: 3px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .tips-badge {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fbbf24;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .tips-text {
+    font-size: 0.88rem;
+    color: #fef3c7;
+    line-height: 1.5;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const searchInput = document.getElementById('search-question-input');
+    const cards = document.querySelectorAll('.study-question-card');
+
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    function applyFilterAndSearch() {
+      cards.forEach((card) => {
+        const subtest = card.getAttribute('data-subtest');
+        const searchCorpus = card.getAttribute('data-search') || '';
+
+        const matchFilter = currentFilter === 'all' || subtest === currentFilter;
+        const matchSearch = searchQuery === '' || searchCorpus.includes(searchQuery.toLowerCase());
+
+        if (matchFilter && matchSearch) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    filterPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentFilter = pill.getAttribute('data-filter') || 'all';
+        applyFilterAndSearch();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = (e.target.value || '').trim();
+        applyFilterAndSearch();
+      });
+    }
+  })();
+</script>

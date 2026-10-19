@@ -1,0 +1,632 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const plans = [
+  {
+    id: 'free',
+    name: 'Paket Dasar (Gratis)',
+    price: 0,
+    priceLabel: 'Rp 0',
+    period: 'Selamanya',
+    description: 'Akses simulasi harian untuk menguji pemahaman dasar.',
+    badge: 'GRATIS',
+    isPopular: false,
+    features: [
+      'Simulasi CAT Dasar (CPNS SKD, PPPK, BUMN)',
+      'Timer Server-Authoritative Standar BKN',
+      'Penyimpanan Riwayat Nilai & Jawaban',
+      'Pembahasan Ringkas Soal',
+      'Akses Terbatas 3 Sesi / Hari'
+    ],
+    buttonText: 'Paket Aktif',
+    buttonDisabled: true
+  },
+  {
+    id: 'pro-tryout',
+    name: 'Paket Tryout Akbar Nasional',
+    price: 49000,
+    priceLabel: 'Rp 49.000',
+    period: '1x Tiket Event',
+    description: 'Ikuti tryout serentak nasional dengan perangkingan realtime se-Indonesia.',
+    badge: 'EVENT AKBAR',
+    isPopular: true,
+    features: [
+      '1x Akses Tryout Akbar SKD CPNS 2026',
+      'Live Leaderboard & Perangkingan Nasional',
+      'Analisis Ranking per Instansi Pilihan',
+      'Kunci Jawaban & Pembahasan Video Trik Cepat',
+      'Sertifikat Kelulusan & Prediksi Formasi',
+      'Download PDF Rangkuman Materi HOTS'
+    ],
+    buttonText: 'Daftar Tryout Sekarang',
+    buttonDisabled: false
+  },
+  {
+    id: 'vip-unlimited',
+    name: 'Membership VIP 30 Hari',
+    price: 99000,
+    priceLabel: 'Rp 99.000',
+    period: 'Akses 30 Hari Penuh',
+    description: 'Paket intensif terlengkap untuk persiapan optimal lolos CPNS & Kedinasan.',
+    badge: 'BEST VALUE',
+    isPopular: false,
+    features: [
+      'Akses Tanpa Batas Seluruh Bank Soal CAT',
+      'Lebih dari 50+ Paket Tryout Standar BKN',
+      'Mode Drilling Per Topik (TWK, TIU, TKP)',
+      'Grafik Radar Analisis Kelemahan Personal',
+      'Grup Diskusi & Mentoring Tutor Berpengalaman',
+      'Jaminan Update Soal Sesuai Regulasi Terbaru'
+    ],
+    buttonText: 'Langganan VIP 30 Hari',
+    buttonDisabled: false
+  }
+];
+---
+
+<Layout title="Paket Pro & Tryout Akbar - SIMCAT 2026">
+  <div class="dashboard-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="dash-breadcrumb">
+        <a href="/dashboard">Dashboard</a>
+        <span>/</span>
+        <span>Paket Pro & Tryout Akbar</span>
+      </div>
+
+      <div class="pricing-header-center">
+        <span class="badge-pill-cyan">UPGRADE PERSIAPAN LOLOS SELEKSI</span>
+        <h1 class="page-title">Pilihan Paket Tryout & Keanggotaan SIMCAT</h1>
+        <p class="page-subtitle">
+          Tingkatkan akurasi dan kecepatan Anda dengan modul simulasi terstandarisasi BKN, analisis perangkingan nasional, dan pembahasan trik cepat.
+        </p>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="dash-tabs-bar">
+        <a href="/dashboard" class="dash-tab">Ringkasan Belajar</a>
+        <a href="/dashboard/riwayat" class="dash-tab">Riwayat Ujian</a>
+        <a href="/dashboard/analisis" class="dash-tab">Analisis Kelemahan</a>
+        <a href="/dashboard/pembelian" class="dash-tab active">Paket Pro & Tryout Akbar</a>
+      </div>
+
+      <!-- Pricing Plans Grid -->
+      <div class="pricing-grid">
+        {plans.map((plan) => (
+          <div class={`pricing-card glass-panel ${plan.isPopular ? 'popular-card' : ''}`}>
+            {plan.badge && (
+              <div class="card-badge-top">
+                <span>{plan.badge}</span>
+              </div>
+            )}
+
+            <div class="plan-header">
+              <h3 class="plan-name">{plan.name}</h3>
+              <p class="plan-desc">{plan.description}</p>
+              <div class="price-wrap">
+                <span class="price-number">{plan.priceLabel}</span>
+                <span class="price-period">/ {plan.period}</span>
+              </div>
+            </div>
+
+            <hr class="plan-divider" />
+
+            <div class="plan-features">
+              <span class="features-label">Fasilitas yang Didapatkan:</span>
+              <ul class="features-list">
+                {plan.features.map((feat) => (
+                  <li>
+                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="plan-footer">
+              <button
+                class={`btn btn-block ${plan.isPopular ? 'btn-primary' : 'btn-secondary'}`}
+                disabled={plan.buttonDisabled}
+                data-plan-id={plan.id}
+                data-plan-name={plan.name}
+                data-plan-price={plan.price}
+                onclick="handleOrderClick(this)"
+              >
+                {plan.buttonText}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Guarantee & Payment Info Box -->
+      <div class="payment-info-box glass-panel">
+        <div class="pib-item">
+          <span class="pib-icon">🔒</span>
+          <div>
+            <h4>Pembayaran Instan & Aman</h4>
+            <p>Mendukung QRIS, GoPay, OVO, ShopeePay, Virtual Account BCA, Mandiri, BNI, dan BRI.</p>
+          </div>
+        </div>
+        <div class="pib-item">
+          <span class="pib-icon">⚡</span>
+          <div>
+            <h4>Aktivasi Otomatis</h4>
+            <p>Akses paket simulasi langsung terbuka seketika setelah pembayaran terverifikasi server.</p>
+          </div>
+        </div>
+        <div class="pib-item">
+          <span class="pib-icon">🎯</span>
+          <div>
+            <h4>Bank Soal Berkualitas HOTS</h4>
+            <p>Disusun oleh tim reviewer kredibel sesuai kisi-kisi KepmenPAN-RB dan BKN terbaru.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div class="modal-backdrop" id="order-modal" style="display: none;">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title">Konfirmasi Aktivasi Paket</h3>
+        <button class="modal-close-btn" onclick="closeOrderModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="order-summary-box">
+          <span class="osb-label">Paket Dipilih:</span>
+          <h4 class="osb-name" id="modal-plan-name">-</h4>
+          <div class="osb-price-row">
+            <span>Total Tagihan:</span>
+            <strong class="osb-price" id="modal-plan-price">Rp 0</strong>
+          </div>
+        </div>
+
+        <div class="payment-method-select">
+          <label class="pm-label">Pilih Metode Pembayaran:</label>
+          <div class="pm-options">
+            <label class="pm-radio-card active">
+              <input type="radio" name="payment_method" value="QRIS" checked />
+              <span>QRIS (Semua E-Wallet & M-Banking)</span>
+            </label>
+            <label class="pm-radio-card">
+              <input type="radio" name="payment_method" value="VA_BCA" />
+              <span>Virtual Account BCA</span>
+            </label>
+            <label class="pm-radio-card">
+              <input type="radio" name="payment_method" value="VA_MANDIRI" />
+              <span>Virtual Account Mandiri</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="order-alert-box" id="order-success-box" style="display: none;">
+          <span class="alert-icon">✓</span>
+          <div>
+            <strong>Aktivasi Simulasi Berhasil!</strong>
+            <p>Paket telah ditambahkan ke akun Anda. Selamat berlatih!</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeOrderModal()">Batal</button>
+        <button class="btn btn-primary" id="btn-confirm-pay" onclick="submitMockOrder()">
+          Bayar & Aktifkan Paket
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .dashboard-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .dash-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+
+  .dash-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .pricing-header-center {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 32px;
+  }
+
+  .badge-pill-cyan {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .dash-tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: center;
+  }
+
+  .dash-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .dash-tab:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .dash-tab.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .pricing-card {
+    position: relative;
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 194, 255, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .popular-card {
+    border: 2px solid #00c2ff;
+    background: linear-gradient(180deg, rgba(0, 194, 255, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%);
+    box-shadow: 0 8px 30px rgba(0, 194, 255, 0.15);
+  }
+
+  .card-badge-top {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00c2ff;
+    color: #080c14;
+    padding: 3px 14px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  .plan-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px;
+  }
+
+  .plan-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0 0 16px;
+    min-height: 40px;
+  }
+
+  .price-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .price-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: monospace;
+  }
+
+  .price-period {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .plan-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 0 0 20px;
+  }
+
+  .features-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .features-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+
+  .check-icon {
+    color: #00c2ff;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .payment-info-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 28px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .pib-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .pib-icon {
+    font-size: 1.8rem;
+  }
+
+  .pib-item h4 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin: 0 0 4px;
+  }
+
+  .pib-item p {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-width: 500px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  .order-summary-box {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 18px;
+  }
+
+  .osb-label {
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+
+  .osb-name {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin: 2px 0 10px;
+  }
+
+  .osb-price-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+  }
+
+  .osb-price {
+    color: #00c2ff;
+    font-size: 1.15rem;
+  }
+
+  .pm-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .pm-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .pm-radio-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .order-alert-box {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 992px) {
+    .pricing-grid {
+      grid-template-columns: 1fr;
+    }
+    .payment-info-box {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  let selectedPlan = null;
+
+  function handleOrderClick(btn) {
+    const planId = btn.getAttribute('data-plan-id');
+    const planName = btn.getAttribute('data-plan-name');
+    const planPrice = btn.getAttribute('data-plan-price');
+
+    selectedPlan = { id: planId, name: planName, price: parseInt(planPrice, 10) };
+
+    document.getElementById('modal-plan-name').textContent = planName;
+    document.getElementById('modal-plan-price').textContent = `Rp ${selectedPlan.price.toLocaleString('id-ID')}`;
+    document.getElementById('order-success-box').style.display = 'none';
+    document.getElementById('btn-confirm-pay').disabled = false;
+    document.getElementById('btn-confirm-pay').textContent = 'Bayar & Aktifkan Paket';
+
+    document.getElementById('order-modal').style.display = 'flex';
+  }
+
+  function closeOrderModal() {
+    document.getElementById('order-modal').style.display = 'none';
+  }
+
+  function submitMockOrder() {
+    const payBtn = document.getElementById('btn-confirm-pay');
+    payBtn.disabled = true;
+    payBtn.textContent = 'Memverifikasi Pembayaran...';
+
+    setTimeout(() => {
+      document.getElementById('order-success-box').style.display = 'flex';
+      payBtn.textContent = 'Paket Berhasil Aktif!';
+      setTimeout(() => {
+        closeOrderModal();
+        alert(`Selamat! Anda telah resmi terdaftar pada ${selectedPlan.name}. Silakan cek modul tryout Anda.`);
+      }, 1200);
+    }, 1000);
+  }
+</script>

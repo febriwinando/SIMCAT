@@ -1,0 +1,225 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Tentang SIMCAT - Platform Simulasi CAT Nasional Terstandarisasi">
+  <div class="tentang-page-wrapper">
+    <div class="container">
+      <div class="tentang-hero text-center">
+        <span class="badge-pill">TENTANG SIMCAT INDONESIA</span>
+        <h1 class="page-title">Membangun Keunggulan Kompetensi Calon Aparatur Negara</h1>
+        <p class="page-subtitle">
+          Platform pembelajaran, latihan soal, tryout, dan simulasi ujian berbasis komputer yang realistis, transparan, dan terstandarisasi secara nasional.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon">🏛️</div>
+          <h3>CPNS</h3>
+          <p>Persiapan intensif Seleksi Kompetensi Dasar (SKD) dengan materi TWK, TIU, dan TKP berstandar KepmenPAN-RB.</p>
+        </div>
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon">💼</div>
+          <h3>PPPK</h3>
+          <p>Simulasi Kompetensi Teknis, Manajerial, Sosio-Kultural, dan Wawancara untuk tenaga guru, nakes, dan teknis.</p>
+        </div>
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon">🏢</div>
+          <h3>BUMN</h3>
+          <p>Drilling Tes Kemampuan Dasar (TKD), Core Values AKHLAK, dan Tes Bahasa Inggris format Rekrutmen Bersama BUMN.</p>
+        </div>
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon">🎓</div>
+          <h3>Sekolah Kedinasan</h3>
+          <p>Ujian seleksi masuk IPDN, STAN, STIS, Poltekip, Poltekim, dan kedinasan lainnya dengan passing grade ketat.</p>
+        </div>
+      </div>
+
+      <!-- Vision & Mission -->
+      <div class="story-section glass-panel">
+        <div class="story-col">
+          <h2 class="section-title">Visi & Misi Platform</h2>
+          <p class="story-p">
+            SIMCAT hadir sebagai respons atas kebutuhan jutaan putra-putri terbaik bangsa yang berjuang menggapai cita-cita mengabdi kepada negeri. Kami meyakini bahwa setiap pejuang ASN dan BUMN berhak mendapatkan sarana latihan yang setara, modern, dan bebas hambatan biaya.
+          </p>
+          <ul class="mission-list">
+            <li><strong>Simulasi Realistis:</strong> Menghadirkan antarmuka CAT yang persis seperti sistem resmi dengan timer server-authoritative.</li>
+            <li><strong>Penyusunan Berstandar HOTS:</strong> Seluruh butir soal melalui alur editorial ketat oleh tim reviewer tersertifikasi.</li>
+            <li><strong>Evaluasi Presisi:</strong> Memberikan peta kelemahan diagnostik sehingga waktu belajar dapat difokuskan pada materi yang paling membutuhkan peningkatan.</li>
+          </ul>
+        </div>
+        <div class="story-col">
+          <div class="disclaimer-callout">
+            <div class="dc-badge">DISCLAIMER RESMI</div>
+            <p>
+              <strong>SIMCAT (Simulasi Computer Assisted Test)</strong> adalah platform pembelajaran independen yang dikembangkan untuk tujuan edukasi dan persiapan mandiri masyarakat.
+            </p>
+            <p>
+              SIMCAT <strong>bukan</strong> merupakan instansi pemerintah resmi dan tidak terafiliasi secara institusional dengan Badan Kepegawaian Negara (BKN), Kementerian PAN-RB, Kementerian BUMN, maupun lembaga seleksi kedinasan. Segala merk dagang, nama instansi, dan regulasi yang dikutip merupakan rujukan ilmiah dalam rangka simulasi edukasi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .tentang-page-wrapper {
+    padding: 40px 0 80px;
+  }
+
+  .tentang-hero {
+    max-width: 760px;
+    margin: 0 auto 40px;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 12px;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .pillar-card {
+    padding: 24px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+  }
+
+  .pillar-icon {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+  }
+
+  .pillar-card h3 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin: 0 0 8px;
+  }
+
+  .pillar-card p {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .story-section {
+    padding: 36px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 36px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 14px;
+  }
+
+  .story-p {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+
+  .mission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mission-list li {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.45;
+  }
+
+  .mission-list strong {
+    color: #ffffff;
+  }
+
+  .disclaimer-callout {
+    padding: 24px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .dc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f59e0b;
+    color: #080c14;
+    font-size: 0.72rem;
+    font-weight: 800;
+    width: fit-content;
+    margin-bottom: 12px;
+  }
+
+  .disclaimer-callout p {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.55;
+    margin: 0 0 12px;
+  }
+
+  @media (max-width: 992px) {
+    .pillars-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .story-section {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .pillars-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

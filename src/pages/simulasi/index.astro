@@ -1,0 +1,270 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const packages = queryAll(`
+  SELECT 
+    p.*,
+    c.name as category_name,
+    c.icon as category_icon,
+    sr.name as scoring_rule_name
+  FROM exam_packages p
+  JOIN exam_categories c ON p.category_id = c.id
+  JOIN scoring_rules sr ON p.scoring_rule_id = sr.id
+  WHERE p.status = 'published'
+  ORDER BY p.id ASC
+`);
+
+const categories = queryAll(`SELECT id, name, icon FROM exam_categories WHERE is_active = 1 ORDER BY sort_order ASC`);
+---
+
+<Layout title="Katalog Simulasi Ujian CAT - SIMCAT 2026">
+  <div class="simulasi-page-wrapper">
+    <div class="container">
+      <div class="page-header text-center">
+        <div class="bkn-badge-pill">
+          <span class="badge-dot"></span>
+          PORTAL SIMULASI UJIAN BERBASIS KOMPUTER
+        </div>
+        <h1 class="page-title">Katalog Tryout & Simulasi CAT</h1>
+        <p class="page-subtitle">
+          Pilih paket simulasi sesuai kebutuhan persiapan seleksi Anda. Seluruh paket dilengkapi server-authoritative timer, penilaian passing grade resmi, dan pembahasan tuntas.
+        </p>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar glass-panel">
+        <div class="category-filters">
+          <button class="filter-btn active" data-filter="all">Semua Kategori</button>
+          {categories.map((c) => (
+            <button class="filter-btn" data-filter={c.id}>
+              {c.icon} {c.name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Packages Grid -->
+      <div class="packages-grid" id="packages-grid">
+        {packages.map((pkg) => (
+          <div class="pkg-card glass-panel" data-cat={pkg.category_id}>
+            <div class="pkg-header">
+              <span class="pkg-icon">{pkg.category_icon}</span>
+              <div class="pkg-badges">
+                <span class="badge badge-cpns">{pkg.category_name}</span>
+                <span class="badge badge-pppk">{pkg.is_free ? 'GRATIS' : 'PREMIUM'}</span>
+              </div>
+            </div>
+
+            <h3 class="pkg-title">{pkg.title}</h3>
+            <p class="pkg-desc">{pkg.description}</p>
+
+            <div class="pkg-stats">
+              <div class="stat-col">
+                <span class="stat-label">WAKTU</span>
+                <span class="stat-value">{pkg.duration_minutes} Mnt</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-col">
+                <span class="stat-label">JUMLAH SOAL</span>
+                <span class="stat-value">{pkg.total_questions} Butir</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-col">
+                <span class="stat-label">SKOR MAX</span>
+                <span class="stat-value">550</span>
+              </div>
+            </div>
+
+            <div class="pkg-footer">
+              <a href={`/simulasi/${pkg.slug}`} class="btn btn-primary btn-block">
+                Mulai Simulasi CAT →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.pkg-card') as NodeListOf<HTMLElement>;
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = btn.getAttribute('data-filter');
+
+      cards.forEach((card) => {
+        if (filter === 'all' || card.dataset.cat === filter) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .simulasi-page-wrapper {
+    padding: 60px 0 80px;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .page-header {
+    max-width: 780px;
+    margin: 0 auto 40px;
+  }
+
+  .page-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 14px 0 16px;
+  }
+
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .filter-bar {
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 36px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-btn {
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .filter-btn.active {
+    background: #155eef;
+    border-color: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(21, 94, 239, 0.4);
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+  }
+
+  .pkg-card {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 26px;
+    border-radius: var(--radius-md);
+    transition: all 0.25s ease;
+  }
+
+  .pkg-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .pkg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .pkg-icon {
+    font-size: 2.2rem;
+  }
+
+  .pkg-badges {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pkg-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .pkg-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 22px;
+    flex: 1;
+  }
+
+  .pkg-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 22px;
+  }
+
+  .stat-col {
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1rem;
+    color: #ffffff;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .btn-block {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+</style>

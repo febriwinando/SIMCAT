@@ -1,0 +1,62 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  isExam?: boolean;
+}
+
+const {
+  title = 'SIMCAT 2026 - Platform Simulasi Ujian CAT CPNS, PPPK, POLRI, TNI',
+  description = 'SIMCAT adalah platform latihan soal dan tryout simulasi CAT terlengkap untuk persiapan seleksi CPNS, PPPK, POLRI, dan TNI dengan sistem penilaian resmi BKN dan pembahasan lengkap.',
+  isExam = false
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="id" class={isExam ? 'theme-exam-light-html' : ''}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/simcat-icon-192.png" />
+    <link rel="apple-touch-icon" href="/images/simcat-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content="SIMCAT, simulasi CAT, CPNS 2026, SKD CPNS, TWK, TIU, TKP, PPPK, tes POLRI, tes TNI, Akmil, Bintara, tryout online" />
+    <meta name="author" content="SIMCAT Indonesia" />
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:image" content="/images/simcat-logo.png" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content={isExam ? "#f8fafc" : "#0b0f19"} />
+  </head>
+  <body id="top" class={isExam ? 'theme-exam-light-body' : ''}>
+    {!isExam && <Navbar currentPath={currentPath} />}
+    <main class={`main-content ${isExam ? 'main-exam-content' : ''}`}>
+      <slot />
+    </main>
+    {!isExam && <Footer />}
+  </body>
+</html>
+
+<style>
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

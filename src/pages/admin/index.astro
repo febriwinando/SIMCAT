@@ -1,0 +1,498 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll, queryOne } from '../../db';
+
+const userCount = queryOne<{ count: number }>(`SELECT COUNT(*) as count FROM users`)?.count || 0;
+const questionCount = queryOne<{ count: number }>(`SELECT COUNT(*) as count FROM questions`)?.count || 0;
+const pendingReviewCount = queryOne<{ count: number }>(`
+  SELECT COUNT(*) as count FROM questions WHERE editorial_status IN ('draft', 'review_pending', 'revision_required')
+`)?.count || 0;
+const publishedCount = queryOne<{ count: number }>(`
+  SELECT COUNT(*) as count FROM questions WHERE editorial_status = 'published'
+`)?.count || 0;
+const packageCount = queryOne<{ count: number }>(`SELECT COUNT(*) as count FROM exam_packages`)?.count || 0;
+const attemptCount = queryOne<{ count: number }>(`SELECT COUNT(*) as count FROM exam_attempts`)?.count || 0;
+const passedCount = queryOne<{ count: number }>(`SELECT COUNT(*) as count FROM exam_results WHERE is_passed = 1`)?.count || 0;
+const avgScore = queryOne<{ avg: number }>(`SELECT AVG(total_score) as avg FROM exam_results`)?.avg || 0;
+
+const questionsByCategory = queryAll(`
+  SELECT c.id, c.name, COUNT(q.id) as total_questions
+  FROM exam_categories c
+  LEFT JOIN questions q ON c.id = q.category_id
+  GROUP BY c.id
+`);
+
+const recentAudit = queryAll(`
+  SELECT l.action, l.resource_type, l.resource_id, l.details, l.created_at,
+         u.email as user_email, r.name as role_name
+  FROM audit_logs l
+  LEFT JOIN users u ON l.user_id = u.id
+  LEFT JOIN roles r ON u.role_id = r.id
+  ORDER BY l.id DESC
+  LIMIT 8
+`);
+---
+
+<Layout title="Admin Backoffice Portal - SIMCAT 2026">
+  <div class="admin-page-wrapper">
+    <div class="container">
+      <!-- Admin Top Banner -->
+      <div class="admin-header-card glass-panel">
+        <div>
+          <div class="admin-badge">
+            <span class="pulse-dot"></span>
+            PORTAL BACKOFFICE OPERASIONAL
+          </div>
+          <h1 class="admin-title">Pusat Kendali Sistem SIMCAT</h1>
+          <p class="admin-desc">
+            Manajemen bank butir soal, alur editorial reviewer, penetapan aturan penilaian terstandarisasi, dan pemantauan attempt nasional.
+          </p>
+        </div>
+        <div class="admin-actions">
+          <a href="/admin/bank-soal" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Tambah Soal Baru
+          </a>
+        </div>
+      </div>
+
+      <!-- Admin Submenu Navigation -->
+      <div class="admin-nav-bar">
+        <a href="/admin" class="admin-nav-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Ringkasan KPI
+        </a>
+        <a href="/admin/bank-soal" class="admin-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          Bank Soal ({questionCount})
+        </a>
+        <a href="/admin/review-soal" class="admin-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 15l2 2 4-4"></path>
+          </svg>
+          Review Editorial {pendingReviewCount > 0 && <span class="badge-count">{pendingReviewCount}</span>}
+        </a>
+        <a href="/admin/paket-ujian" class="admin-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          Paket Ujian & Rules ({packageCount})
+        </a>
+        <a href="/admin/audit-log" class="admin-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          Audit Log
+        </a>
+      </div>
+
+      <!-- KPI Metrics Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card glass-panel">
+          <div class="kpi-label">Total Butir Soal</div>
+          <div class="kpi-number">{questionCount}</div>
+          <div class="kpi-sub">
+            <span class="text-green">{publishedCount} Terpublikasi</span> • 
+            <span class="text-amber">{pendingReviewCount} Perlu Review</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-label">Total Pengguna Terdaftar</div>
+          <div class="kpi-number">{userCount}</div>
+          <div class="kpi-sub">Peserta, Reviewer, dan Editor</div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-label">Total Attempt Simulasi</div>
+          <div class="kpi-number">{attemptCount}</div>
+          <div class="kpi-sub">Sesi ujian server tercatat</div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-label">Tingkat Kelulusan PG</div>
+          <div class="kpi-number text-green">
+            {attemptCount > 0 ? Math.round((passedCount / attemptCount) * 100) : 0}%
+          </div>
+          <div class="kpi-sub">Rata-rata Skor: {Math.round(avgScore * 10) / 10}</div>
+        </div>
+      </div>
+
+      <!-- Main Columns -->
+      <div class="admin-split-grid">
+        <!-- Distribution by Category -->
+        <div class="split-col">
+          <div class="glass-panel content-box">
+            <div class="box-header">
+              <h3 class="box-title">Distribusi Bank Soal per Kategori Seleksi</h3>
+              <p class="box-desc">Sebaran butir soal siap uji yang terbagi ke dalam 4 rumpun seleksi nasional.</p>
+            </div>
+
+            <div class="category-dist-list">
+              {questionsByCategory.map((cat) => (
+                <div class="cat-dist-item">
+                  <div class="cdi-header">
+                    <span class="cdi-name">{cat.name}</span>
+                    <span class="cdi-count">{cat.total_questions} Butir</span>
+                  </div>
+                  <div class="cdi-bar-track">
+                    <div
+                      class="cdi-bar-fill"
+                      style={`width: ${questionCount > 0 ? Math.round((cat.total_questions / questionCount) * 100) : 0}%;`}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="quick-admin-links">
+              <a href="/admin/bank-soal" class="btn btn-secondary btn-block">Kelola Bank Soal Selengkapnya &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Audit Trail -->
+        <div class="split-col">
+          <div class="glass-panel content-box">
+            <div class="box-header">
+              <h3 class="box-title">Aktivitas Audit Sistem Terbaru</h3>
+              <p class="box-desc">Rekam jejak tindakan admin, reviewer, dan engine ujian.</p>
+            </div>
+
+            <div class="audit-stream">
+              {recentAudit.length > 0 ? (
+                recentAudit.map((log) => (
+                  <div class="audit-item">
+                    <div class="audit-dot"></div>
+                    <div class="audit-content">
+                      <div class="audit-top">
+                        <span class="audit-action">{log.action}</span>
+                        <span class="audit-time">
+                          {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p class="audit-desc">{log.details || `Mengubah ${log.resource_type} #${log.resource_id}`}</p>
+                      <span class="audit-user">{log.user_email || 'Sistem Engine'} ({log.role_name || 'System'})</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p class="text-dim">Belum ada catatan log aktivitas.</p>
+              )}
+            </div>
+
+            <div class="quick-admin-links">
+              <a href="/admin/audit-log" class="btn btn-secondary btn-block">Buka Seluruh Audit Trail &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .admin-header-card {
+    padding: 28px 32px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.7) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(0, 194, 255, 0.15);
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00c2ff;
+    box-shadow: 0 0 8px #00c2ff;
+  }
+
+  .admin-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .admin-desc {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 680px;
+  }
+
+  .admin-nav-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .admin-nav-item:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .admin-nav-item.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .badge-count {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .kpi-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .kpi-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: #ffffff;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .kpi-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  .text-green { color: #10b981 !important; }
+  .text-amber { color: #f59e0b !important; }
+
+  .admin-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .content-box {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .box-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .box-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .category-dist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .cdi-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+  }
+
+  .cdi-count {
+    color: #00c2ff;
+    font-family: monospace;
+  }
+
+  .cdi-bar-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .cdi-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0077ff, #00c2ff);
+    border-radius: 99px;
+  }
+
+  .audit-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .audit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .audit-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00c2ff;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .audit-content {
+    flex-grow: 1;
+    background: rgba(30, 41, 59, 0.35);
+    padding: 10px 14px;
+    border-radius: 8px;
+  }
+
+  .audit-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 2px;
+  }
+
+  .audit-action {
+    color: #38bdf8;
+    font-family: monospace;
+  }
+
+  .audit-time {
+    color: #64748b;
+  }
+
+  .audit-desc {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    margin: 0 0 4px;
+  }
+
+  .audit-user {
+    font-size: 0.72rem;
+    color: #64748b;
+  }
+
+  .quick-admin-links {
+    margin-top: auto;
+    padding-top: 14px;
+  }
+
+  @media (max-width: 992px) {
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .admin-split-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+    .admin-header-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+</style>

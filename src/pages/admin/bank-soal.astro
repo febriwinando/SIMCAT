@@ -1,0 +1,925 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const categories = queryAll(`SELECT id, name FROM exam_categories WHERE is_active = 1 ORDER BY sort_order ASC`);
+const subjects = queryAll(`SELECT id, category_id, name, code FROM subjects ORDER BY category_id, name ASC`);
+
+const questions = queryAll(`
+  SELECT 
+    q.id, q.uuid, q.category_id, q.subject_id,
+    q.question_text, q.stimulus_text, q.difficulty,
+    q.editorial_status, q.created_at,
+    c.name as category_name, s.name as subject_name, s.code as subject_code,
+    (SELECT COUNT(*) FROM question_options WHERE question_id = q.id) as option_count
+  FROM questions q
+  JOIN exam_categories c ON q.category_id = c.id
+  JOIN subjects s ON q.subject_id = s.id
+  ORDER BY q.id DESC
+`);
+---
+
+<Layout title="Bank Soal Terstandarisasi - SIMCAT Admin">
+  <div class="admin-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="admin-breadcrumb">
+        <a href="/admin">Backoffice</a>
+        <span>/</span>
+        <span>Bank Soal</span>
+      </div>
+
+      <!-- Top Header -->
+      <div class="admin-page-header">
+        <div>
+          <h1 class="page-title">Bank Butir Soal Ujian CAT</h1>
+          <p class="page-subtitle">Pusat repositori butir soal dengan pembobotan adaptif dan metadata HOTS terverifikasi.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Tambah Butir Soal
+        </button>
+      </div>
+
+      <!-- Submenu Navigation -->
+      <div class="admin-nav-bar">
+        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item active">Bank Soal ({questions.length})</a>
+        <a href="/admin/review-soal" class="admin-nav-item">Review Editorial</a>
+        <a href="/admin/paket-ujian" class="admin-nav-item">Paket Ujian & Rules</a>
+        <a href="/admin/audit-log" class="admin-nav-item">Audit Log</a>
+      </div>
+
+      <!-- Filter Controls Bar -->
+      <div class="filter-controls-bar glass-panel">
+        <div class="filter-group">
+          <label>Kategori Seleksi:</label>
+          <select id="filter-category" class="filter-select" onchange="applyFilters()">
+            <option value="all">Semua Rumpun Kategori</option>
+            {categories.map((cat) => (
+              <option value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Status Editorial:</label>
+          <select id="filter-status" class="filter-select" onchange="applyFilters()">
+            <option value="all">Semua Status</option>
+            <option value="published">Terpublikasi (Published)</option>
+            <option value="review_pending">Menunggu Review</option>
+            <option value="revision_required">Perlu Revisi</option>
+            <option value="draft">Draf (Draft)</option>
+          </select>
+        </div>
+
+        <div class="filter-group search-group">
+          <label>Cari Teks Soal / Stimulus:</label>
+          <input
+            type="text"
+            id="filter-search"
+            class="filter-input"
+            placeholder="Ketik kata kunci..."
+            oninput="applyFilters()"
+          />
+        </div>
+      </div>
+
+      <!-- Questions Table Container -->
+      <div class="questions-table-card glass-panel">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">ID</th>
+                <th style="width: 140px;">Rumpun & Subtes</th>
+                <th>Stimulus & Teks Butir Soal</th>
+                <th style="width: 90px; text-align: center;">Tingkat</th>
+                <th style="width: 120px; text-align: center;">Opsi Jawaban</th>
+                <th style="width: 140px;">Status</th>
+                <th style="width: 110px; text-align: right;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="questions-tbody">
+              {questions.map((q) => (
+                <tr
+                  class="q-row"
+                  data-category={q.category_id}
+                  data-subject={q.subject_id}
+                  data-status={q.editorial_status}
+                  data-search={`${q.question_text} ${q.stimulus_text || ''}`.toLowerCase()}
+                >
+                  <td class="font-mono text-dim">#{q.id}</td>
+                  <td>
+                    <div class="cell-subtest">
+                      <span class="sub-badge">{q.subject_code}</span>
+                      <span class="cat-label">{q.category_name}</span>
+                    </div>
+                  </td>
+                  <td>
+                    {q.stimulus_text && (
+                      <div class="stimulus-preview">
+                        <em>Stimulus:</em> {q.stimulus_text.length > 90 ? q.stimulus_text.substring(0, 90) + '...' : q.stimulus_text}
+                      </div>
+                    )}
+                    <div class="question-text-preview">
+                      {q.question_text.length > 130 ? q.question_text.substring(0, 130) + '...' : q.question_text}
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="diff-stars" title={`Tingkat Kesulitan: ${q.difficulty}/5`}>
+                      {'★'.repeat(q.difficulty)}{'☆'.repeat(5 - q.difficulty)}
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="option-count-pill">{q.option_count} Opsi (A-E)</span>
+                  </td>
+                  <td>
+                    <span class={`status-badge status-${q.editorial_status}`}>
+                      {q.editorial_status === 'published' && '✓ Terpublikasi'}
+                      {q.editorial_status === 'review_pending' && '⏳ Butuh Review'}
+                      {q.editorial_status === 'revision_required' && '⚠️ Perlu Revisi'}
+                      {q.editorial_status === 'draft' && '📝 Draf'}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button
+                      class="btn btn-secondary btn-xs"
+                      data-qid={q.id}
+                      onclick="viewQuestionDetail(this)"
+                    >
+                      Detail
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Question Modal -->
+  <div class="modal-backdrop" id="create-modal" style="display: none;">
+    <div class="modal-card-lg glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title">Tambah Butir Soal Baru ke Bank Soal</h3>
+        <button class="modal-close-btn" onclick="closeCreateModal()">&times;</button>
+      </div>
+
+      <form id="create-question-form" onsubmit="handleCreateQuestion(event)">
+        <div class="modal-body-scroll">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Rumpun Kategori *</label>
+              <select id="input-category" class="form-control" required onchange="updateSubjectOptions()">
+                <option value="">Pilih Kategori...</option>
+                {categories.map((c) => (
+                  <option value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subtes Materi *</label>
+              <select id="input-subject" class="form-control" required>
+                <option value="">Pilih Subtes...</option>
+                {subjects.map((s) => (
+                  <option value={s.id} data-category={s.category_id}>
+                    [{s.code}] {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Tingkat Kesulitan (1 Mudah - 5 Sangat Sulit/HOTS)</label>
+              <select id="input-difficulty" class="form-control">
+                <option value="1">1 - Sangat Mudah</option>
+                <option value="2">2 - Mudah</option>
+                <option value="3" selected>3 - Sedang</option>
+                <option value="4">4 - Sulit (HOTS)</option>
+                <option value="5">5 - Sangat Sulit (Kompleks)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Status Editorial Awal</label>
+              <select id="input-status" class="form-control">
+                <option value="published" selected>Publikasikan Langsung (Published)</option>
+                <option value="review_pending">Ajukan untuk Review (Review Pending)</option>
+                <option value="draft">Simpan sebagai Draf</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Wacana / Stimulus Bacaan (Opsional)</label>
+            <textarea
+              id="input-stimulus"
+              class="form-control"
+              rows="3"
+              placeholder="Ketik paragraf wacana, studi kasus, atau tabel rujukan jika ada..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teks Pertanyaan Butir Soal *</label>
+            <textarea
+              id="input-question-text"
+              class="form-control"
+              rows="3"
+              placeholder="Ketik pertanyaan butir soal di sini..."
+              required
+            ></textarea>
+          </div>
+
+          <!-- Options Section -->
+          <div class="options-creation-box">
+            <div class="ocb-header">
+              <label class="form-label" style="margin: 0;">Pilihan Opsi Jawaban (A - E)</label>
+              <span class="ocb-hint">Untuk TKP, berikan bobot skala 1–5 pada tiap opsi. Untuk TWK/TIU, centang opsi benar (+5 poin).</span>
+            </div>
+
+            <div class="options-inputs-list">
+              {['A', 'B', 'C', 'D', 'E'].map((optKey, idx) => (
+                <div class="option-input-row">
+                  <div class="opt-key-badge">{optKey}</div>
+                  <input
+                    type="text"
+                    id={`opt-text-${optKey}`}
+                    class="form-control"
+                    placeholder={`Teks pilihan jawaban ${optKey}...`}
+                    required={idx < 4}
+                  />
+                  <div class="opt-score-wrap">
+                    <label class="opt-correct-check">
+                      <input type="checkbox" id={`opt-correct-${optKey}`} onchange={`toggleCorrect('${optKey}')`} />
+                      <span>Benar</span>
+                    </label>
+                    <input
+                      type="number"
+                      id={`opt-weight-${optKey}`}
+                      class="form-control weight-input"
+                      value={optKey === 'A' ? '5' : '0'}
+                      min="0"
+                      max="5"
+                      step="1"
+                      title="Bobot Nilai (0 - 5)"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <!-- Explanation Section -->
+          <div class="form-group" style="margin-top: 16px;">
+            <label class="form-label">Kunci Pembahasan Lengkap *</label>
+            <textarea
+              id="input-explanation"
+              class="form-control"
+              rows="3"
+              placeholder="Tuliskan analisis pembahasan konsep jawaban secara komprehensif..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Trik Cepat / Formula Khusus</label>
+              <input
+                type="text"
+                id="input-quick-trick"
+                class="form-control"
+                placeholder="Contoh: Eliminasi nilai ekstrim terlebih dahulu..."
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rujukan Sumber Resmi</label>
+              <input
+                type="text"
+                id="input-reference"
+                class="form-control"
+                placeholder="Contoh: Pasal 27 ayat 3 UUD 1945 / Modul Resmi BKN"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Batal</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-question">
+            Simpan Butir Soal ke Database
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="detail-modal" style="display: none;">
+    <div class="modal-card-lg glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detail-modal-title">Rincian Butir Soal</h3>
+        <button class="modal-close-btn" onclick="closeDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body-scroll" id="detail-modal-body">
+        <div class="loading-box">Memuat detail soal...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .admin-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .admin-nav-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .admin-nav-item:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .admin-nav-item.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .filter-controls-bar {
+    padding: 18px 24px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+  }
+
+  .filter-select, .filter-input {
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.85rem;
+    outline: none;
+  }
+
+  .filter-select:focus, .filter-input:focus {
+    border-color: #00c2ff;
+  }
+
+  .search-group {
+    flex-grow: 1;
+  }
+
+  .questions-table-card {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .admin-table th {
+    padding: 12px 14px;
+    text-align: left;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+
+  .admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+  }
+
+  .admin-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cell-subtest {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sub-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #00c2ff;
+    color: #080c14;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: monospace;
+    width: fit-content;
+  }
+
+  .cat-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+
+  .stimulus-preview {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .question-text-preview {
+    color: #e2e8f0;
+    line-height: 1.4;
+  }
+
+  .diff-stars {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+  }
+
+  .option-count-pill {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .status-published {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+
+  .status-review_pending {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+  }
+
+  .status-revision_required {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .status-draft {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.4);
+  }
+
+  .btn-xs {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  /* Modals */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-card-lg {
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.6rem;
+    cursor: pointer;
+  }
+
+  .modal-body-scroll {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  .form-control {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.9rem;
+    outline: none;
+  }
+
+  .form-control:focus {
+    border-color: #00c2ff;
+  }
+
+  .options-creation-box {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .ocb-header {
+    margin-bottom: 14px;
+  }
+
+  .ocb-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  .options-inputs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .opt-key-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .opt-score-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .opt-correct-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #34d399;
+    cursor: pointer;
+  }
+
+  .weight-input {
+    width: 60px;
+    text-align: center;
+    padding: 8px 6px;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+
+<script is:inline>
+  function applyFilters() {
+    const cat = document.getElementById('filter-category').value;
+    const status = document.getElementById('filter-status').value;
+    const search = document.getElementById('filter-search').value.toLowerCase().trim();
+
+    const rows = document.querySelectorAll('.q-row');
+    rows.forEach((row) => {
+      const matchCat = cat === 'all' || row.getAttribute('data-category') === cat;
+      const matchStatus = status === 'all' || row.getAttribute('data-status') === status;
+      const matchSearch = !search || row.getAttribute('data-search').includes(search);
+
+      if (matchCat && matchStatus && matchSearch) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function openCreateModal() {
+    document.getElementById('create-modal').style.display = 'flex';
+  }
+
+  function closeCreateModal() {
+    document.getElementById('create-modal').style.display = 'none';
+  }
+
+  function openDetailModal() {
+    document.getElementById('detail-modal').style.display = 'flex';
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+  }
+
+  function updateSubjectOptions() {
+    const cat = document.getElementById('input-category').value;
+    const subSelect = document.getElementById('input-subject');
+    const options = subSelect.querySelectorAll('option');
+
+    options.forEach((opt) => {
+      if (!opt.value) return;
+      if (!cat || opt.getAttribute('data-category') === cat) {
+        opt.style.display = '';
+      } else {
+        opt.style.display = 'none';
+      }
+    });
+  }
+
+  function toggleCorrect(key) {
+    const isChecked = document.getElementById(`opt-correct-${key}`).checked;
+    const weightInput = document.getElementById(`opt-weight-${key}`);
+    if (isChecked) {
+      weightInput.value = '5';
+    } else {
+      weightInput.value = '0';
+    }
+  }
+
+  async function handleCreateQuestion(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-question');
+    btn.disabled = true;
+    btn.textContent = 'Menyimpan ke Server...';
+
+    const categoryId = document.getElementById('input-category').value;
+    const subjectId = document.getElementById('input-subject').value;
+    const difficulty = parseInt(document.getElementById('input-difficulty').value, 10);
+    const editorialStatus = document.getElementById('input-status').value;
+    const stimulusText = document.getElementById('input-stimulus').value.trim();
+    const questionText = document.getElementById('input-question-text').value.trim();
+    const explanationText = document.getElementById('input-explanation').value.trim();
+    const quickTrick = document.getElementById('input-quick-trick').value.trim();
+    const referenceSource = document.getElementById('input-reference').value.trim();
+
+    const options = ['A', 'B', 'C', 'D', 'E'].map((k) => ({
+      key: k,
+      text: document.getElementById(`opt-text-${k}`).value.trim(),
+      isCorrect: document.getElementById(`opt-correct-${k}`).checked,
+      scoreWeight: parseFloat(document.getElementById(`opt-weight-${k}`).value || '0')
+    })).filter((o) => o.text.length > 0);
+
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoryId,
+          subjectId,
+          difficulty,
+          editorialStatus,
+          stimulusText,
+          questionText,
+          explanationText,
+          quickTrick,
+          referenceSource,
+          options
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('Butir soal berhasil ditambahkan ke bank soal!');
+        window.location.reload();
+      } else {
+        alert('Gagal: ' + (data.error || 'Terjadi kesalahan sistem'));
+        btn.disabled = false;
+        btn.textContent = 'Simpan Butir Soal ke Database';
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan jaringan.');
+      btn.disabled = false;
+      btn.textContent = 'Simpan Butir Soal ke Database';
+    }
+  }
+
+  async function viewQuestionDetail(btn) {
+    const qid = btn.getAttribute('data-qid');
+    openDetailModal();
+    const body = document.getElementById('detail-modal-body');
+    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8;">Memuat detail butir soal...</div>';
+
+    try {
+      const res = await fetch(`/api/admin/questions?id=${qid}`);
+      const data = await res.json();
+      if (data.success && data.question) {
+        const q = data.question;
+        body.innerHTML = `
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <span class="sub-badge">${q.subject_code}</span>
+            <span class="cat-label">${q.category_name}</span>
+            <span class="status-badge status-${q.editorial_status}">${q.editorial_status}</span>
+          </div>
+
+          ${q.stimulus_text ? `
+            <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.88rem; color: #cbd5e1; border-left: 3px solid #00c2ff;">
+              <strong style="color: #00c2ff;">Stimulus:</strong><br/>
+              ${q.stimulus_text}
+            </div>
+          ` : ''}
+
+          <h3 style="color: #ffffff; font-size: 1.15rem; margin-bottom: 16px; line-height: 1.45;">
+            ${q.question_text}
+          </h3>
+
+          <h4 style="color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px;">
+            Opsi Jawaban & Pembobotan:
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+            ${(q.options || []).map(opt => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 8px; background: ${opt.is_correct ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.03)'}; border: 1px solid ${opt.is_correct ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.06)'};">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <strong style="color: ${opt.is_correct ? '#34d399' : '#ffffff'};">${opt.option_key}.</strong>
+                  <span style="color: #e2e8f0;">${opt.option_text}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  ${opt.is_correct ? '<span style="color: #34d399; font-size: 0.75rem; font-weight: 700;">✓ KUNCI</span>' : ''}
+                  <span style="font-family: monospace; font-size: 0.85rem; color: #00c2ff; font-weight: 700;">Bobot: ${opt.score_weight}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${q.explanation ? `
+            <div style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06);">
+              <h4 style="color: #00c2ff; margin: 0 0 8px; font-size: 0.95rem;">Pembahasan Terverifikasi:</h4>
+              <p style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin: 0 0 10px;">
+                ${q.explanation.explanation_text}
+              </p>
+              ${q.explanation.quick_trick ? `<div style="font-size: 0.82rem; color: #fbbf24; margin-bottom: 6px;">⚡ Trik Cepat: ${q.explanation.quick_trick}</div>` : ''}
+              ${q.explanation.reference_source ? `<div style="font-size: 0.78rem; color: #64748b;">📖 Rujukan: ${q.explanation.reference_source}</div>` : ''}
+            </div>
+          ` : ''}
+        `;
+      }
+    } catch (e) {
+      body.innerHTML = '<div style="color: #ef4444; padding: 20px;">Gagal memuat detail soal.</div>';
+    }
+  }
+</script>

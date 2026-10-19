@@ -1,0 +1,422 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const packages = queryAll(`
+  SELECT 
+    p.id, p.slug, p.title, p.category_id, p.scoring_rule_id,
+    p.duration_minutes, p.total_questions, p.is_free, p.price,
+    p.status, p.created_at,
+    c.name as category_name,
+    r.name as scoring_rule_name, r.reference_source, r.rules_json,
+    (SELECT COUNT(*) FROM package_questions WHERE package_id = p.id) as mapped_questions,
+    (SELECT COUNT(*) FROM exam_attempts WHERE package_id = p.id) as attempt_count
+  FROM exam_packages p
+  JOIN exam_categories c ON p.category_id = c.id
+  JOIN scoring_rules r ON p.scoring_rule_id = r.id
+  ORDER BY p.id ASC
+`);
+
+const scoringRules = queryAll(`
+  SELECT id, name, category_id, reference_source, version, rules_json, notes
+  FROM scoring_rules
+  ORDER BY id ASC
+`);
+---
+
+<Layout title="Paket Ujian & Scoring Rules - SIMCAT Admin">
+  <div class="admin-page-wrapper">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <div class="admin-breadcrumb">
+        <a href="/admin">Backoffice</a>
+        <span>/</span>
+        <span>Paket Ujian & Scoring Rules</span>
+      </div>
+
+      <div class="admin-page-header">
+        <div>
+          <h1 class="page-title">Konfigurasi Paket Ujian & Aturan Penilaian</h1>
+          <p class="page-subtitle">Pemisahan mutlak antara aturan penilaian resmi berversi dan mesin eksekusi ujian CAT.</p>
+        </div>
+      </div>
+
+      <!-- Submenu Navigation -->
+      <div class="admin-nav-bar">
+        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item">Bank Soal</a>
+        <a href="/admin/review-soal" class="admin-nav-item">Review Editorial</a>
+        <a href="/admin/paket-ujian" class="admin-nav-item active">Paket Ujian & Rules ({packages.length})</a>
+        <a href="/admin/audit-log" class="admin-nav-item">Audit Log</a>
+      </div>
+
+      <!-- Packages Grid -->
+      <div class="packages-section glass-panel">
+        <div class="box-header">
+          <h2 class="box-title">Daftar Paket Simulasi Aktif</h2>
+          <p class="box-desc">Paket tryout yang dapat diakses oleh peserta di portal publik dan dashboard.</p>
+        </div>
+
+        <div class="packages-grid">
+          {packages.map((pkg) => (
+            <div class="package-admin-card">
+              <div class="pac-top">
+                <span class="pac-cat">{pkg.category_name}</span>
+                <span class={`status-badge status-${pkg.status}`}>{pkg.status}</span>
+              </div>
+
+              <h3 class="pac-title">{pkg.title}</h3>
+              <div class="pac-slug">Slug: <code>{pkg.slug}</code></div>
+
+              <div class="pac-specs">
+                <div class="spec-item">
+                  <span class="spec-label">⏱️ Durasi:</span>
+                  <span class="spec-val">{pkg.duration_minutes} Menit</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">❓ Jumlah Soal:</span>
+                  <span class="spec-val">{pkg.total_questions} Butir ({pkg.mapped_questions} terpetakan)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">🎯 Aturan Skor:</span>
+                  <span class="spec-val text-cyan">{pkg.scoring_rule_name}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">📜 Regulasi:</span>
+                  <span class="spec-val text-dim">{pkg.reference_source}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">👥 Total Attempt:</span>
+                  <span class="spec-val text-green">{pkg.attempt_count} Sesi Dikerjakan</span>
+                </div>
+              </div>
+
+              <div class="pac-footer">
+                <a href={`/simulasi/${pkg.slug}`} target="_blank" class="btn btn-secondary btn-sm">
+                  Uji Coba CAT ↗
+                </a>
+                <a href={`/pembahasan/${pkg.slug}`} class="btn btn-primary btn-sm">
+                  Kunci & Pembahasan
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Scoring Rules Table -->
+      <div class="rules-section glass-panel" style="margin-top: 30px;">
+        <div class="box-header">
+          <h2 class="box-title">Scoring Rulesets Terdaftar (Engine Independent)</h2>
+          <p class="box-desc">Konfigurasi parameter ambang batas kelulusan per subtes berbasis regulasi perundang-undangan.</p>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID Aturan</th>
+                <th>Nama Scoring Rule</th>
+                <th>Dasar Regulasi Resmi</th>
+                <th>Versi</th>
+                <th>Parameter Passing Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scoringRules.map((rule) => {
+                let parsedRules: any = {};
+                try {
+                  parsedRules = JSON.parse(rule.rules_json);
+                } catch (e) {}
+
+                return (
+                  <tr>
+                    <td class="font-mono text-cyan">#{rule.id}</td>
+                    <td><strong>{rule.name}</strong></td>
+                    <td class="text-dim">{rule.reference_source}</td>
+                    <td><span class="version-pill">v{rule.version}</span></td>
+                    <td>
+                      <div class="rule-pg-chips">
+                        {parsedRules.subtests ? (
+                          Object.keys(parsedRules.subtests).map((stKey: string) => {
+                            const st = parsedRules.subtests[stKey];
+                            return (
+                              <span class="pg-mini-chip">
+                                {st.name || stKey}: <strong>{st.passingGrade}</strong>
+                              </span>
+                            );
+                          })
+                        ) : (
+                          <span class="text-dim">-</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-page-wrapper {
+    padding: 32px 0 80px;
+  }
+
+  .admin-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .admin-breadcrumb a {
+    color: #00c2ff;
+    text-decoration: none;
+  }
+
+  .admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .admin-nav-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .admin-nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .admin-nav-item:hover {
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.8);
+  }
+
+  .admin-nav-item.active {
+    color: #ffffff;
+    background: rgba(0, 194, 255, 0.15);
+    border-color: rgba(0, 194, 255, 0.4);
+  }
+
+  .packages-section, .rules-section {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .box-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .package-admin-card {
+    padding: 22px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .pac-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .pac-cat {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    font-size: 0.75rem;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .status-published { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+  .pac-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+  }
+
+  .pac-slug {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .pac-slug code {
+    color: #00c2ff;
+  }
+
+  .pac-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 18px;
+    font-size: 0.82rem;
+  }
+
+  .spec-item {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .spec-label {
+    color: #94a3b8;
+  }
+
+  .spec-val {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .text-cyan { color: #00c2ff !important; }
+  .text-green { color: #10b981 !important; }
+  .text-dim { color: #64748b !important; }
+
+  .pac-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .btn-sm {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+  }
+
+  /* Table */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .admin-table th {
+    padding: 12px 14px;
+    text-align: left;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+
+  .admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .version-pill {
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(0, 194, 255, 0.15);
+    color: #00c2ff;
+    font-size: 0.75rem;
+    font-family: monospace;
+  }
+
+  .rule-pg-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pg-mini-chip {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    font-family: monospace;
+  }
+
+  .pg-mini-chip strong {
+    color: #10b981;
+  }
+
+  @media (max-width: 992px) {
+    .packages-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

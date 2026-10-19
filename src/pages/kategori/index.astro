@@ -1,0 +1,200 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { queryAll } from '../../db';
+
+const categories = queryAll(`
+  SELECT 
+    c.*,
+    COUNT(DISTINCT p.id) as total_packages,
+    COUNT(DISTINCT s.id) as total_subjects
+  FROM exam_categories c
+  LEFT JOIN exam_packages p ON c.id = p.category_id AND p.status = 'published'
+  LEFT JOIN subjects s ON c.id = s.category_id
+  GROUP BY c.id
+  ORDER BY c.sort_order ASC
+`);
+---
+
+<Layout title="Kategori Seleksi Nasional - SIMCAT 2026">
+  <div class="category-page-wrapper">
+    <div class="container">
+      <div class="page-header text-center">
+        <div class="bkn-badge-pill">
+          <span class="badge-dot"></span>
+          KISI-KISI & SILABUS RESMI 2026
+        </div>
+        <h1 class="page-title">Pilih Rumpun Seleksi Nasional</h1>
+        <p class="page-subtitle">
+          SIMCAT menyediakan bank soal dan simulasi CAT terstandarisasi untuk 4 rumpun seleksi utama di Indonesia dengan sistem penilaian sesuai regulasi rujukan.
+        </p>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="categories-grid">
+        {categories.map((cat) => (
+          <div class="cat-card glass-panel">
+            <div class="cat-card-header">
+              <span class="cat-icon">{cat.icon}</span>
+              <div class="cat-meta-wrap">
+                <span class="badge badge-cpns">{cat.total_packages} Paket Simulasi</span>
+                <span class="badge badge-pppk">{cat.total_subjects} Subtes Materi</span>
+              </div>
+            </div>
+
+            <h2 class="cat-title">{cat.name}</h2>
+            <p class="cat-desc">{cat.description}</p>
+
+            <div class="cat-features">
+              {cat.id === 'cpns' && (
+                <ul>
+                  <li><strong>TWK (30 Soal)</strong>: Passing Grade 65</li>
+                  <li><strong>TIU (35 Soal)</strong>: Passing Grade 80</li>
+                  <li><strong>TKP (45 Soal)</strong>: Passing Grade 166</li>
+                </ul>
+              )}
+              {cat.id === 'pppk' && (
+                <ul>
+                  <li><strong>Kompetensi Teknis</strong>: Bobot 5 per butir</li>
+                  <li><strong>Manajerial & Sosbud</strong>: Skala skor 1-4</li>
+                  <li><strong>Wawancara Komputer</strong>: Ambang batas 24</li>
+                </ul>
+              )}
+              {cat.id === 'bumn' && (
+                <ul>
+                  <li><strong>TKD BUMN</strong>: Nilai minimal 58</li>
+                  <li><strong>Core Values AKHLAK</strong>: Nilai minimal 65</li>
+                  <li><strong>Kurikulum FHCI 2026</strong></li>
+                </ul>
+              )}
+              {cat.id === 'sekolah-kedinasan' && (
+                <ul>
+                  <li><strong>SKD CAT Kedinasan</strong>: Ambang batas BKN</li>
+                  <li><strong>TPA Akademik Instansi</strong>: IPDN, STAN, STIS</li>
+                  <li><strong>Sistem Penalti Soal (-1)</strong></li>
+                </ul>
+              )}
+            </div>
+
+            <div class="cat-actions">
+              <a href={`/kategori/${cat.id}`} class="btn btn-secondary" style="flex: 1;">
+                Lihat Silabus
+              </a>
+              <a href={`/simulasi/${cat.id === 'cpns' ? 'cpns-skd' : cat.id}`} class="btn btn-primary" style="flex: 1;">
+                Mulai Tes →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .category-page-wrapper {
+    padding: 60px 0 80px;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .page-header {
+    max-width: 780px;
+    margin: 0 auto 50px;
+  }
+
+  .page-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 14px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+  }
+
+  .cat-card {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    border-radius: var(--radius-md);
+    transition: all 0.25s ease;
+  }
+
+  .cat-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .cat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .cat-icon {
+    font-size: 2.2rem;
+  }
+
+  .cat-meta-wrap {
+    display: flex;
+    gap: 6px;
+  }
+
+  .cat-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+
+  .cat-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .cat-features {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+  }
+
+  .cat-features ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cat-features li {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .cat-features strong {
+    color: #ffffff;
+  }
+
+  .cat-actions {
+    display: flex;
+    gap: 12px;
+  }
+</style>

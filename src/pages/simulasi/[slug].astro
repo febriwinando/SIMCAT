@@ -93,6 +93,30 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
       </div>
     </header>
 
+    <!-- Offline Alert Banner -->
+    <div class="exam-offline-banner" id="exam-offline-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+      <span>Koneksi internet terputus! Jawaban Anda tetap aman di browser dan akan disinkronkan otomatis saat online kembali.</span>
+    </div>
+
+    <!-- Time Warning Toast Banner -->
+    <div class="exam-toast-banner" id="time-toast" style="display: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span id="time-toast-text">Peringatan Waktu</span>
+    </div>
+
     <!-- Main Workspace -->
     <div class="exam-body font-md" id="exam-body-area">
       <!-- Question Panel (Left) -->
@@ -118,6 +142,17 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
           <div class="options-list" id="options-container">
             <!-- Dynamic Options Injected via JS -->
           </div>
+
+          <!-- Hotkey Keyboard Helper Bar -->
+          <div class="hotkey-guide-bar">
+            <div class="hotkey-items-group">
+              <span class="hotkey-item"><span class="hotkey-kbd">A</span>-<span class="hotkey-kbd">E</span> / <span class="hotkey-kbd">1</span>-<span class="hotkey-kbd">5</span> Opsi</span>
+              <span class="hotkey-item"><span class="hotkey-kbd">←</span> <span class="hotkey-kbd">→</span> Navigasi</span>
+              <span class="hotkey-item"><span class="hotkey-kbd">R</span> Ragu</span>
+              <span class="hotkey-item"><span class="hotkey-kbd">Del</span> Hapus</span>
+            </div>
+            <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 600;">⌨️ Hotkeys Aktif</span>
+          </div>
         </div>
 
         <!-- Action Bar -->
@@ -134,6 +169,14 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             <span id="btn-doubtful-text">Ragu-Ragu</span>
+          </button>
+
+          <button class="btn btn-clear-choice" id="btn-clear-choice" title="Hapus pilihan jawaban pada soal ini" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Hapus Pilihan</span>
           </button>
 
           <div class="action-nav-group">
@@ -157,8 +200,31 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
           <span class="palette-total" id="palette-total-badge">{pkg.total_questions} Soal</span>
         </div>
 
-        <div class="palette-grid" id="palette-grid">
-          <!-- Dynamic number tiles injected via JS -->
+        <!-- Filter Subtest & Status -->
+        <div class="palette-filter-section">
+          <div class="palette-filter-label">
+            <span>Lompat Subtes:</span>
+            <span id="palette-filtered-count" style="color: #2563eb; font-weight: 700;">Semua</span>
+          </div>
+          <div class="palette-subtest-pills" id="subtest-pills-container">
+            <button type="button" class="filter-pill active" data-subtest="all">Semua</button>
+          </div>
+          <div class="palette-filter-label" style="margin-top: 4px;">
+            <span>Filter Status:</span>
+          </div>
+          <div class="palette-status-pills" id="status-pills-container">
+            <button type="button" class="filter-pill active" data-status="all">Semua</button>
+            <button type="button" class="filter-pill" data-status="answered">Dijawab</button>
+            <button type="button" class="filter-pill" data-status="doubtful">Ragu (?)</button>
+            <button type="button" class="filter-pill" data-status="skipped">Dilewati (!)</button>
+            <button type="button" class="filter-pill" data-status="unvisited">Belum</button>
+          </div>
+        </div>
+
+        <div class="palette-grid-wrapper">
+          <div class="palette-grid" id="palette-grid">
+            <!-- Dynamic number tiles injected via JS -->
+          </div>
         </div>
 
         <div class="palette-legend">
@@ -393,6 +459,11 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
     let soundEnabled = true;
     let autoAdvanceTimer: any = null;
     let allAnsweredPromptShown = false;
+    let isExamActive = false;
+
+    // Filter states
+    let activeSubtestFilter = 'all';
+    let activeStatusFilter = 'all';
 
     // Elements
     const preExamModal = document.getElementById('pre-exam-modal');
@@ -415,6 +486,7 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
     const btnPrev = document.getElementById('btn-prev') as HTMLButtonElement;
     const btnNext = document.getElementById('btn-next') as HTMLButtonElement;
     const btnDoubtful = document.getElementById('btn-doubtful') as HTMLButtonElement;
+    const btnClearChoice = document.getElementById('btn-clear-choice') as HTMLButtonElement;
     const btnFinishTrigger = document.getElementById('btn-finish-trigger');
     const btnCancelFinish = document.getElementById('btn-cancel-finish');
     const btnConfirmFinish = document.getElementById('btn-confirm-finish');
@@ -428,6 +500,113 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
     const countUnvisited = document.getElementById('count-unvisited');
     const saveDot = document.getElementById('save-dot');
     const saveStatusText = document.getElementById('save-status-text');
+
+    const subtestPillsContainer = document.getElementById('subtest-pills-container');
+    const statusPillsContainer = document.getElementById('status-pills-container');
+    const paletteFilteredCount = document.getElementById('palette-filtered-count');
+    const timeToast = document.getElementById('time-toast');
+    const timeToastText = document.getElementById('time-toast-text');
+    const offlineBanner = document.getElementById('exam-offline-banner');
+    const btnSoundToggle = document.getElementById('btn-sound-toggle');
+    const soundIconOn = document.getElementById('sound-icon-on');
+
+    // 1. Audio Synthesizer (Web Audio API)
+    let audioCtx: any = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq = 520, type: OscillatorType = 'sine', duration = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playAlertChime() {
+      if (!soundEnabled) return;
+      playTone(523.25, 'triangle', 0.12);
+      setTimeout(() => playTone(659.25, 'triangle', 0.18), 120);
+    }
+
+    // Sound toggle state & storage
+    const savedSound = localStorage.getItem('simcat_sound_enabled');
+    if (savedSound !== null) {
+      soundEnabled = savedSound === 'true';
+    }
+    updateSoundUI();
+
+    function updateSoundUI() {
+      if (!btnSoundToggle) return;
+      if (soundEnabled) {
+        btnSoundToggle.style.color = '#2563eb';
+        btnSoundToggle.title = 'Efek Suara: Aktif';
+      } else {
+        btnSoundToggle.style.color = '#94a3b8';
+        btnSoundToggle.title = 'Efek Suara: Hening';
+      }
+    }
+
+    if (btnSoundToggle) {
+      btnSoundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('simcat_sound_enabled', String(soundEnabled));
+        updateSoundUI();
+        if (soundEnabled) playTone(587.33, 'sine', 0.1);
+      });
+    }
+
+    // Time Warning Toast
+    let toastTimeout: any = null;
+    function showTimeToast(msg: string, isDanger = false) {
+      if (!timeToast || !timeToastText) return;
+      timeToastText.textContent = msg;
+      timeToast.className = 'exam-toast-banner' + (isDanger ? ' danger' : '');
+      timeToast.style.display = 'flex';
+      playAlertChime();
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        timeToast.style.display = 'none';
+      }, 7000);
+    }
+
+    // Online/Offline Listeners
+    window.addEventListener('offline', () => {
+      if (offlineBanner) offlineBanner.style.display = 'flex';
+      setSaveStatus('error', 'Koneksi terputus');
+    });
+
+    window.addEventListener('online', () => {
+      if (offlineBanner) offlineBanner.style.display = 'none';
+      setSaveStatus('success', 'Online kembali');
+    });
+
+    // Accidental Tab Close Protection
+    window.addEventListener('beforeunload', (e) => {
+      if (isExamActive) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
 
     // Enable Start Button on Agreement
     if (checkAgreement && btnStartExam) {
@@ -466,6 +645,7 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         attemptUuid = data.attemptUuid;
         questions = data.questions;
         remainingSeconds = data.remainingSeconds;
+        isExamActive = true;
 
         // Restore existing answers if resumed
         if (data.existingAnswers) {
@@ -480,6 +660,7 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         if (preExamModal) preExamModal.style.display = 'none';
 
         initPalette();
+        initSubtestFilterPills();
         renderQuestion(0);
         startTimer();
         startHeartbeat();
@@ -506,6 +687,13 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
           if (timerDisplay) timerDisplay.textContent = '00:00:00';
           autoSubmitOnExpire();
           return;
+        }
+
+        // 5-minute and 1-minute alert triggers
+        if (remainingSeconds === 300) {
+          showTimeToast('⚠️ Waktu tersisa 5 Menit! Mohon periksa kembali jawaban ragu-ragu Anda.', false);
+        } else if (remainingSeconds === 60) {
+          showTimeToast('🚨 Waktu tersisa 1 Menit! Sistem akan otomatis mengunci saat timer habis.', true);
         }
 
         const h = Math.floor(remainingSeconds / 3600);
@@ -541,17 +729,15 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
             if (json.isExpired) {
               autoSubmitOnExpire();
             } else if (Math.abs(remainingSeconds - json.remainingSeconds) > 3) {
-              // Resync drift
               remainingSeconds = json.remainingSeconds;
             }
           }
-        } catch (e) {
-          // Soft ignore heartbeat offline
-        }
+        } catch (e) {}
       }, 30000);
     }
 
     function autoSubmitOnExpire() {
+      isExamActive = false;
       alert('Waktu ujian telah berakhir! Sistem otomatis mengunci dan menghitung nilai Anda.');
       finishExam(true);
     }
@@ -601,6 +787,11 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         });
       }
 
+      // Clear Choice button state
+      if (btnClearChoice) {
+        btnClearChoice.disabled = !answers[q.id];
+      }
+
       // Doubtful state
       if (btnDoubtful) {
         if (doubtful[q.id]) {
@@ -619,6 +810,7 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
     // Option Selection & Server Autosave
     async function selectOption(questionId: number, key: string) {
       answers[questionId] = key;
+      playTone(600, 'sine', 0.05);
       renderQuestion(currentIndex);
       updateCounts();
 
@@ -672,12 +864,59 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
       }
     }
 
+    // Clear Option (Hapus Pilihan)
+    async function clearOption(questionId: number) {
+      if (!answers[questionId]) return;
+      answers[questionId] = null;
+      playTone(400, 'sine', 0.08);
+      renderQuestion(currentIndex);
+      updateCounts();
+
+      sequenceCounter++;
+      setSaveStatus('saving', 'Menghapus pilihan...');
+
+      fetch('/api/exam/save-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attemptUuid,
+          questionId,
+          selectedOptionKey: null,
+          isDoubtful: Boolean(doubtful[questionId]),
+          sequence: sequenceCounter
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          setSaveStatus('success', 'Pilihan dihapus');
+        } else if (res.isExpired) {
+          autoSubmitOnExpire();
+        } else {
+          setSaveStatus('error', 'Gagal simpan');
+        }
+      })
+      .catch(() => {
+        setSaveStatus('error', 'Koneksi terganggu');
+      });
+    }
+
+    if (btnClearChoice) {
+      btnClearChoice.addEventListener('click', () => {
+        const q = questions[currentIndex];
+        if (q && answers[q.id]) {
+          clearOption(q.id);
+        }
+      });
+    }
+
     // Toggle Doubtful
     if (btnDoubtful) {
       btnDoubtful.addEventListener('click', async () => {
         const q = questions[currentIndex];
         if (!q) return;
         doubtful[q.id] = !doubtful[q.id];
+        playTone(doubtful[q.id] ? 480 : 380, 'sine', 0.06);
         renderQuestion(currentIndex);
         updateCounts();
 
@@ -711,7 +950,6 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         if (currentIndex < questions.length - 1) {
           renderQuestion(currentIndex + 1);
         } else {
-          // Last question -> open finish modal
           openFinishModal();
         }
       });
@@ -727,6 +965,8 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         tile.className = 'palette-tile';
         tile.id = `palette-tile-${q.id}`;
         tile.textContent = String(idx + 1);
+        tile.setAttribute('data-subtest', q.subtestCode || q.subtestName || '');
+        tile.setAttribute('data-index', String(idx));
         tile.addEventListener('click', () => {
           renderQuestion(idx);
         });
@@ -734,6 +974,98 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
       });
       updatePaletteUI();
       updateCounts();
+    }
+
+    // Dynamic Subtest Quick Filter Pills
+    function initSubtestFilterPills() {
+      if (!subtestPillsContainer) return;
+      const subtestSet = new Set<string>();
+      questions.forEach(q => {
+        const code = q.subtestCode || q.subtestName;
+        if (code) subtestSet.add(code);
+      });
+
+      // Keep 'Semua' pill
+      subtestPillsContainer.innerHTML = '<button type="button" class="filter-pill active" data-subtest="all">Semua</button>';
+
+      subtestSet.forEach(stCode => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'filter-pill';
+        btn.setAttribute('data-subtest', stCode);
+        btn.textContent = stCode;
+        subtestPillsContainer.appendChild(btn);
+      });
+
+      // Subtest pill clicks
+      subtestPillsContainer.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          subtestPillsContainer.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeSubtestFilter = btn.getAttribute('data-subtest') || 'all';
+          applyPaletteFilters();
+
+          // Jump to first question of this subtest
+          if (activeSubtestFilter !== 'all') {
+            const firstIdx = questions.findIndex(q => (q.subtestCode === activeSubtestFilter || q.subtestName === activeSubtestFilter));
+            if (firstIdx !== -1) {
+              renderQuestion(firstIdx);
+            }
+          }
+        });
+      });
+
+      // Status pill clicks
+      if (statusPillsContainer) {
+        statusPillsContainer.querySelectorAll('.filter-pill').forEach(btn => {
+          btn.addEventListener('click', () => {
+            statusPillsContainer.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeStatusFilter = btn.getAttribute('data-status') || 'all';
+            applyPaletteFilters();
+          });
+        });
+      }
+    }
+
+    function applyPaletteFilters() {
+      let visibleCount = 0;
+      questions.forEach((q) => {
+        const tile = document.getElementById(`palette-tile-${q.id}`);
+        if (!tile) return;
+
+        // Subtest match
+        const matchesSubtest = activeSubtestFilter === 'all' ||
+          q.subtestCode === activeSubtestFilter ||
+          q.subtestName === activeSubtestFilter;
+
+        // Status match
+        let matchesStatus = true;
+        if (activeStatusFilter === 'answered') {
+          matchesStatus = !!answers[q.id] && !doubtful[q.id];
+        } else if (activeStatusFilter === 'doubtful') {
+          matchesStatus = !!doubtful[q.id];
+        } else if (activeStatusFilter === 'skipped') {
+          matchesStatus = !!visited[q.id] && !answers[q.id] && !doubtful[q.id];
+        } else if (activeStatusFilter === 'unvisited') {
+          matchesStatus = !visited[q.id];
+        }
+
+        if (matchesSubtest && matchesStatus) {
+          tile.classList.remove('filtered-out');
+          visibleCount++;
+        } else {
+          tile.classList.add('filtered-out');
+        }
+      });
+
+      if (paletteFilteredCount) {
+        if (activeSubtestFilter === 'all' && activeStatusFilter === 'all') {
+          paletteFilteredCount.textContent = `${questions.length} Soal`;
+        } else {
+          paletteFilteredCount.textContent = `${visibleCount} dari ${questions.length} Soal`;
+        }
+      }
     }
 
     function updatePaletteUI() {
@@ -753,8 +1085,14 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
         } else {
           cls += ' unvisited';
         }
+
+        if (tile.classList.contains('filtered-out')) {
+          cls += ' filtered-out';
+        }
+
         tile.className = cls;
       });
+      applyPaletteFilters();
     }
 
     function updateCounts() {
@@ -790,6 +1128,81 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
       if (mSkip) mSkip.textContent = String(skipCount);
       if (mUnvisit) mUnvisit.textContent = String(unvisitCount);
     }
+
+    // Keyboard Shortcuts (Standard CAT BKN Hotkeys)
+    window.addEventListener('keydown', (e) => {
+      // Do nothing if typing inside an input or if modal is active
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea') return;
+
+      if (
+        (preExamModal && preExamModal.style.display !== 'none') ||
+        (confirmModal && confirmModal.style.display === 'flex') ||
+        (resultModal && resultModal.style.display === 'flex')
+      ) {
+        if (e.key === 'Escape' && confirmModal && confirmModal.style.display === 'flex') {
+          closeFinishModal();
+        }
+        return;
+      }
+
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      const keyUpper = e.key.toUpperCase();
+
+      // 1. Select Option: A, B, C, D, E or 1, 2, 3, 4, 5
+      const keyMap: Record<string, string> = {
+        'A': 'A', '1': 'A',
+        'B': 'B', '2': 'B',
+        'C': 'C', '3': 'C',
+        'D': 'D', '4': 'D',
+        'E': 'E', '5': 'E'
+      };
+
+      if (keyMap[keyUpper]) {
+        const targetOptKey = keyMap[keyUpper];
+        const exists = q.options.some(opt => opt.key.toUpperCase() === targetOptKey);
+        if (exists) {
+          e.preventDefault();
+          selectOption(q.id, targetOptKey);
+          return;
+        }
+      }
+
+      // 2. Navigation: ArrowRight / N, ArrowLeft / P
+      if (e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        if (currentIndex < questions.length - 1) {
+          renderQuestion(currentIndex + 1);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowLeft' || e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        if (currentIndex > 0) {
+          renderQuestion(currentIndex - 1);
+        }
+        return;
+      }
+
+      // 3. Doubtful: R
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        if (btnDoubtful) btnDoubtful.click();
+        return;
+      }
+
+      // 4. Clear Choice: Delete, Backspace, or X
+      if (e.key === 'Delete' || e.key === 'Backspace' || e.key === 'x' || e.key === 'X') {
+        if (answers[q.id]) {
+          e.preventDefault();
+          clearOption(q.id);
+          return;
+        }
+      }
+    });
 
     // Finish Confirmation Modal
     function openFinishModal(isAllAnsweredNotice = false) {
@@ -856,13 +1269,6 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
       });
     }
 
-    // Close on Escape key press
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && confirmModal && confirmModal.style.display === 'flex') {
-        closeFinishModal();
-      }
-    });
-
     if (btnConfirmFinish) {
       btnConfirmFinish.addEventListener('click', () => {
         closeFinishModal();
@@ -872,6 +1278,7 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
 
     // Server-Side Grading Execution
     async function finishExam(isAutoSubmit = false) {
+      isExamActive = false;
       if (timerInterval) clearInterval(timerInterval);
       if (heartbeatInterval) clearInterval(heartbeatInterval);
 
@@ -964,30 +1371,31 @@ const subtestsList = scoringRule.subtests ? Object.values(scoringRule.subtests) 
 
     if (btnRetryExam) {
       btnRetryExam.addEventListener('click', () => {
+        isExamActive = false;
         window.location.reload();
       });
     }
 
-    // Font Sizing
+    // Font Sizing with Persistence
     const btnFontSm = document.getElementById('btn-font-sm');
     const btnFontMd = document.getElementById('btn-font-md');
     const btnFontLg = document.getElementById('btn-font-lg');
     const bodyArea = document.getElementById('exam-body-area');
 
-    if (btnFontSm && bodyArea) {
-      btnFontSm.addEventListener('click', () => {
-        bodyArea.className = 'exam-body font-sm';
-      });
+    function applyFontSize(size: 'font-sm' | 'font-md' | 'font-lg') {
+      if (bodyArea) bodyArea.className = 'exam-body ' + size;
+      localStorage.setItem('simcat_exam_font_size', size);
+      btnFontSm?.classList.toggle('active', size === 'font-sm');
+      btnFontMd?.classList.toggle('active', size === 'font-md');
+      btnFontLg?.classList.toggle('active', size === 'font-lg');
     }
-    if (btnFontMd && bodyArea) {
-      btnFontMd.addEventListener('click', () => {
-        bodyArea.className = 'exam-body font-md';
-      });
-    }
-    if (btnFontLg && bodyArea) {
-      btnFontLg.addEventListener('click', () => {
-        bodyArea.className = 'exam-body font-lg';
-      });
-    }
+
+    const savedSize = (localStorage.getItem('simcat_exam_font_size') as any) || 'font-md';
+    applyFontSize(savedSize);
+
+    btnFontSm?.addEventListener('click', () => applyFontSize('font-sm'));
+    btnFontMd?.addEventListener('click', () => applyFontSize('font-md'));
+    btnFontLg?.addEventListener('click', () => applyFontSize('font-lg'));
   })();
 </script>
+

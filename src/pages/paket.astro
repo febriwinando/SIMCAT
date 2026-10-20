@@ -25,18 +25,21 @@ const packages = queryAll(`
   <div class="katalog-page-wrapper">
     <div class="container">
       <div class="katalog-header text-center">
-        <span class="badge-pill">STANDAR CAT BKN NASIONAL</span>
+        <div class="bkn-badge-pill">
+          <span class="badge-dot"></span>
+          STANDAR CAT BKN & NASIONAL 2026
+        </div>
         <h1 class="page-title">Katalog Paket Simulasi Ujian</h1>
         <p class="page-subtitle">
-          Pilih paket tryout terstandarisasi untuk menguji kesiapan seleksi CPNS, PPPK, BUMN, dan Sekolah Kedinasan dengan algoritma penilaian resmi.
+          Pilih modul tryout terstandarisasi untuk menguji kesiapan seleksi CPNS, PPPK, BUMN, dan Kedinasan dengan kalkulasi ambang batas otomatis.
         </p>
       </div>
 
       <!-- Category Filter Pills -->
       <div class="category-filter-row">
-        <button class="cat-pill active" data-filter="all">Semua Paket ({packages.length})</button>
+        <button class="cat-pill active font-mono" data-filter="all">Semua Paket ({packages.length})</button>
         {categories.map((c) => (
-          <button class="cat-pill" data-filter={c.id}>
+          <button class="cat-pill font-mono" data-filter={c.id}>
             {c.icon} {c.name}
           </button>
         ))}
@@ -45,10 +48,12 @@ const packages = queryAll(`
       <!-- Packages Grid -->
       <div class="packages-grid">
         {packages.map((pkg) => (
-          <div class="pkg-card glass-panel" data-category={pkg.category_id}>
+          <div class="pkg-card cyber-card glass-panel" data-category={pkg.category_id}>
             <div class="pkg-card-top">
-              <span class="pkg-category-tag">{pkg.category_name}</span>
-              <span class="pkg-free-tag">{pkg.is_free ? 'GRATIS' : 'PRO'}</span>
+              <span class="pkg-category-tag font-mono">[ {pkg.category_name} ]</span>
+              <span class={`pkg-free-tag font-mono ${pkg.is_free ? 'tag-free' : 'tag-pro'}`}>
+                {pkg.is_free ? 'GRATIS' : 'PREMIUM'}
+              </span>
             </div>
 
             <h3 class="pkg-title">{pkg.title}</h3>
@@ -56,25 +61,25 @@ const packages = queryAll(`
 
             <div class="pkg-meta-grid">
               <div class="pmg-item">
-                <span class="pmg-label">⏱️ Durasi:</span>
-                <span class="pmg-val">{pkg.duration_minutes} Menit</span>
+                <span class="pmg-label font-mono">⏱️ Durasi:</span>
+                <span class="pmg-val font-mono">{pkg.duration_minutes} Menit</span>
               </div>
               <div class="pmg-item">
-                <span class="pmg-label">❓ Jumlah Soal:</span>
-                <span class="pmg-val">{pkg.total_questions} Butir</span>
+                <span class="pmg-label font-mono">❓ Jumlah Soal:</span>
+                <span class="pmg-val font-mono">{pkg.total_questions} Butir</span>
               </div>
               <div class="pmg-item">
-                <span class="pmg-label">🎯 Standar Nilai:</span>
-                <span class="pmg-val text-cyan">{pkg.scoring_rule_name}</span>
+                <span class="pmg-label font-mono">🎯 Ambang Batas:</span>
+                <span class="pmg-val text-cyan font-mono">{pkg.scoring_rule_name}</span>
               </div>
               <div class="pmg-item">
-                <span class="pmg-label">👥 Telah Diikuti:</span>
-                <span class="pmg-val text-green">{pkg.attempt_count} Peserta</span>
+                <span class="pmg-label font-mono">👥 Telah Diikuti:</span>
+                <span class="pmg-val text-green font-mono">{pkg.attempt_count} Peserta</span>
               </div>
             </div>
 
-            <div class="pkg-legal-note">
-              Rujukan: {pkg.reference_source}
+            <div class="pkg-legal-note font-mono">
+              Rujukan Resmi: {pkg.reference_source}
             </div>
 
             <div class="pkg-card-actions">
@@ -97,177 +102,187 @@ const packages = queryAll(`
 
 <style>
   .katalog-page-wrapper {
-    padding: 40px 0 80px;
+    padding: 50px 0 90px;
   }
 
   .katalog-header {
-    max-width: 680px;
-    margin: 0 auto 36px;
-  }
-
-  .badge-pill {
-    display: inline-block;
-    padding: 4px 14px;
-    border-radius: 99px;
-    background: rgba(0, 194, 255, 0.15);
-    border: 1px solid rgba(0, 194, 255, 0.3);
-    color: #00c2ff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
+    max-width: 720px;
+    margin: 0 auto 40px;
   }
 
   .page-title {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: #ffffff;
-    margin: 0 0 10px;
+    margin: 0 0 12px;
   }
 
   .page-subtitle {
     font-size: 1.05rem;
-    color: #94a3b8;
-    line-height: 1.5;
+    color: var(--text-muted);
+    line-height: 1.6;
     margin: 0;
   }
 
   .category-filter-row {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 32px;
+    gap: 12px;
+    margin-bottom: 38px;
     flex-wrap: wrap;
   }
 
   .cat-pill {
-    padding: 8px 18px;
-    border-radius: 99px;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 9px 20px;
+    border-radius: var(--radius-full);
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.09);
     color: #94a3b8;
-    font-size: 0.88rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
   }
 
   .cat-pill:hover {
     color: #ffffff;
-    background: rgba(30, 41, 59, 0.8);
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(0, 242, 254, 0.35);
+    transform: translateY(-2px);
   }
 
   .cat-pill.active {
-    background: #00c2ff;
-    color: #080c14;
-    border-color: #00c2ff;
+    background: linear-gradient(135deg, #00f2fe 0%, #0072ff 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+    transform: translateY(-2px);
   }
 
   .packages-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: 28px;
   }
 
   .pkg-card {
-    padding: 28px;
-    border-radius: 16px;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    background: rgba(10, 15, 29, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.25s ease;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .pkg-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(0, 194, 255, 0.3);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-6px);
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 242, 254, 0.2);
   }
 
   .pkg-card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .pkg-category-tag {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
+    font-weight: 700;
     padding: 3px 10px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.06);
-    color: #cbd5e1;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    color: #38bdf8;
   }
 
   .pkg-free-tag {
     font-size: 0.72rem;
     font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .tag-free {
+    background: rgba(0, 245, 160, 0.15);
+    color: #00f5a0;
+    border: 1px solid rgba(0, 245, 160, 0.4);
+    box-shadow: 0 0 10px rgba(0, 245, 160, 0.2);
+  }
+
+  .tag-pro {
+    background: rgba(255, 183, 3, 0.15);
+    color: #ffb703;
+    border: 1px solid rgba(255, 183, 3, 0.4);
+    box-shadow: 0 0 10px rgba(255, 183, 3, 0.2);
   }
 
   .pkg-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #ffffff;
     margin: 0 0 8px;
+    transition: color 0.2s ease;
+  }
+
+  .pkg-card:hover .pkg-title {
+    color: #00f2fe;
   }
 
   .pkg-desc {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: #94a3b8;
-    line-height: 1.45;
-    margin: 0 0 18px;
+    line-height: 1.55;
+    margin: 0 0 20px;
   }
 
   .pkg-meta-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.2);
-    margin-bottom: 14px;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 16px;
     font-size: 0.82rem;
   }
 
   .pmg-item {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
 
   .pmg-label {
     color: #64748b;
+    font-size: 0.72rem;
   }
 
   .pmg-val {
     color: #ffffff;
-    font-weight: 600;
+    font-weight: 700;
   }
 
-  .text-cyan { color: #00c2ff !important; }
-  .text-green { color: #10b981 !important; }
+  .text-cyan { color: #00f2fe !important; }
+  .text-green { color: #00f5a0 !important; }
 
   .pkg-legal-note {
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     color: #64748b;
-    margin-bottom: 20px;
-    font-style: italic;
+    margin-bottom: 22px;
   }
 
   .pkg-card-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     justify-content: flex-end;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 820px) {
     .packages-grid {
       grid-template-columns: 1fr;
     }
@@ -281,6 +296,9 @@ const packages = queryAll(`
 
     pills.forEach((p) => {
       p.addEventListener('click', () => {
+        if (typeof window.playCyberSound === 'function') {
+          window.playCyberSound('click');
+        }
         pills.forEach((b) => b.classList.remove('active'));
         p.classList.add('active');
 

@@ -24,40 +24,57 @@ const secondsSpent = result.time_spent_seconds % 60;
     <div class="container">
       <!-- Breadcrumb -->
       <nav class="breadcrumb-nav">
-        <a href="/dashboard">Dashboard</a>
-        <span>/</span>
-        <a href="/dashboard/riwayat">Riwayat</a>
-        <span>/</span>
-        <span class="active">Laporan Nilai</span>
+        <a href="/dashboard" onclick="window.playCyberSound?.('click')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+          DASHBOARD
+        </a>
+        <span class="slash">/</span>
+        <a href="/dashboard/riwayat" onclick="window.playCyberSound?.('click')">RIWAYAT</a>
+        <span class="slash">/</span>
+        <span class="active mono-font">SCORECARD_{result.attempt_uuid.slice(0, 8)}.CERT</span>
       </nav>
 
       <!-- Main Result Card -->
-      <div class="result-master-card glass-panel">
+      <div class="result-master-card cyber-card" style="background: rgba(8, 13, 26, 0.85); border: 1px solid rgba(0, 242, 254, 0.25); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 242, 254, 0.1);">
         <div class="result-banner-top">
           <div class="badge-status-wrap">
             {result.is_passed ? (
-              <span class="badge badge-pass">✓ MEMENUHI AMBANG BATAS (LULUS)</span>
+              <span class="badge badge-pass">
+                <span class="beacon"></span>
+                ✓ MEMENUHI AMBANG BATAS (LULUS PG)
+              </span>
             ) : (
-              <span class="badge badge-fail">✗ BELUM MEMENUHI AMBANG BATAS</span>
+              <span class="badge badge-fail">
+                <span class="beacon" style="background: var(--cyber-crimson);"></span>
+                ✕ BELUM MEMENUHI AMBANG BATAS
+              </span>
             )}
           </div>
-          <span class="exam-date">{new Date(result.graded_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB</span>
+          <span class="exam-date mono-font">
+            🕒 {new Date(result.graded_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB
+          </span>
         </div>
 
         <div class="result-header-info">
           <div>
-            <h1 class="result-title">{result.package_title}</h1>
+            <div class="telemetry-pill mb-2" style="font-size: 0.72rem; display: inline-flex;">
+              <span class="beacon"></span>
+              DEBRIEF_TERMINAL // OFFICIAL_AUDIT_SCORECARD
+            </div>
+            <h1 class="result-title cyber-glitch-title">{result.package_title}</h1>
             <p class="result-user-meta">
-              Nama Peserta: <strong>{result.user_name || result.user_email}</strong> • Kode Sesi: <span class="mono-code">{result.attempt_uuid}</span>
+              Nama Peserta: <strong style="color: #ffffff;">{result.user_name || result.user_email}</strong> • Kode Sesi: <span class="mono-code">{result.attempt_uuid}</span>
             </p>
           </div>
         </div>
 
         <!-- Big Score Hero -->
-        <div class="score-hero-grid">
+        <div class="score-hero-grid cyber-card" style="background: rgba(12, 19, 38, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);">
           <div class="score-hero-col">
-            <span class="sh-label">TOTAL SKOR DIPEROLEH</span>
-            <div class="sh-val text-primary">{result.total_score}</div>
+            <span class="sh-label">TOTAL SKOR AKHIR</span>
+            <div class={`sh-val ${result.is_passed ? 'text-pass-glow' : 'text-fail-glow'}`}>{result.total_score}</div>
             <span class="sh-sub">dari skor maksimal {result.max_possible_score}</span>
           </div>
 
@@ -73,22 +90,25 @@ const secondsSpent = result.time_spent_seconds % 60;
 
           <div class="score-hero-col">
             <span class="sh-label">WAKTU DIGUNAKAN</span>
-            <div class="sh-val">{minutesSpent}m {secondsSpent}s</div>
-            <span class="sh-sub">Pencatatan resmi server</span>
+            <div class="sh-val text-cyan">{minutesSpent}m {secondsSpent}s</div>
+            <span class="sh-sub">Server Authoritative Sync</span>
           </div>
         </div>
 
         <!-- Subtest Breakdown Progress Section -->
         <div class="subtests-breakdown-section">
-          <h2 class="section-subheading">Rincian Perolehan Nilai Subtes</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h2 class="section-subheading" style="margin: 0;">Rincian Perolehan Nilai Subtes</h2>
+            <span class="telemetry-pill" style="font-size: 0.7rem;">PERMENPAN-RB 2024/2026</span>
+          </div>
           <div class="subtest-cards-grid">
             {subtests.map((st: any) => {
               const pct = st.maxScore > 0 ? Math.min(100, Math.round((st.score / st.maxScore) * 100)) : 0;
               return (
-                <div class={`subtest-card ${st.isPassed ? 'passed' : 'failed'}`}>
+                <div class={`subtest-card cyber-card ${st.isPassed ? 'passed' : 'failed'}`}>
                   <div class="st-card-top">
                     <div>
-                      <span class="badge badge-cpns">{st.code}</span>
+                      <span class="badge badge-cpns mono-font">{st.code}</span>
                       <h3 class="st-name">{st.name}</h3>
                     </div>
                     <div class="st-score-wrap">
@@ -99,9 +119,9 @@ const secondsSpent = result.time_spent_seconds % 60;
                   </div>
 
                   <div class="st-pass-info">
-                    <span>Ambang Batas: <strong>{st.passingGrade}</strong></span>
+                    <span>Target PG: <strong>{st.passingGrade}</strong></span>
                     <span class={st.isPassed ? 'text-pass' : 'text-fail'}>
-                      {st.isPassed ? '✓ Memenuhi' : '✗ Di bawah target'}
+                      {st.isPassed ? '✓ Memenuhi' : '✕ Di bawah target'}
                     </span>
                   </div>
 
@@ -109,10 +129,10 @@ const secondsSpent = result.time_spent_seconds % 60;
                     <div class={`progress-fill ${st.isPassed ? 'fill-pass' : 'fill-fail'}`} style={`width: ${pct}%;`}></div>
                   </div>
 
-                  <div class="st-counts">
-                    <span>Benar: <strong>{st.correctCount}</strong></span>
-                    <span>Salah: <strong>{st.wrongCount}</strong></span>
-                    <span>Kosong: <strong>{st.unansweredCount}</strong></span>
+                  <div class="st-counts mono-font">
+                    <span>Benar: <strong class="text-green">{st.correctCount}</strong></span>
+                    <span>Salah: <strong class="text-red">{st.wrongCount}</strong></span>
+                    <span>Kosong: <span>{st.unansweredCount}</span></span>
                   </div>
                 </div>
               );
@@ -122,9 +142,10 @@ const secondsSpent = result.time_spent_seconds % 60;
 
         <!-- Smart Recommendations -->
         {result.recommendations && result.recommendations.length > 0 && (
-          <div class="recommendations-box">
+          <div class="recommendations-box cyber-card" style="background: rgba(14, 23, 48, 0.7); border: 1px solid rgba(0, 242, 254, 0.25);">
             <h3 class="rec-title">
-              <span class="sparkle">💡</span> Analisis & Rekomendasi Latihan Terarah
+              <span class="telemetry-pill" style="font-size: 0.72rem; padding: 2px 8px;">AI_DIAGNOSTIC</span>
+              Analisis Kelemahan & Rekomendasi Latihan Terarah
             </h3>
             <ul class="rec-list">
               {result.recommendations.map((rec: string) => (
@@ -136,17 +157,17 @@ const secondsSpent = result.time_spent_seconds % 60;
 
         <!-- Actions -->
         <div class="result-actions-bar">
-          <a href={`/pembahasan/${result.package_slug}?attempt=${result.attempt_uuid}`} class="btn btn-primary" style="flex: 1.2;">
+          <a href={`/pembahasan/${result.package_slug}?attempt=${result.attempt_uuid}`} class="btn btn-primary" style="flex: 1.2;" onclick="window.playCyberSound?.('confirm')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
             Buka Kunci & Pembahasan Soal
           </a>
-          <a href={`/simulasi/${result.package_slug}`} class="btn btn-secondary" style="flex: 1;">
+          <a href={`/simulasi/${result.package_slug}`} class="btn btn-secondary" style="flex: 1;" onclick="window.playCyberSound?.('click')">
             Ulangi Simulasi Ini
           </a>
-          <a href="/dashboard/riwayat" class="btn btn-secondary" style="flex: 1;">
+          <a href="/dashboard/riwayat" class="btn btn-secondary" style="flex: 1;" onclick="window.playCyberSound?.('click')">
             Kembali ke Riwayat
           </a>
         </div>
@@ -164,52 +185,86 @@ const secondsSpent = result.time_spent_seconds % 60;
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
     color: var(--text-dim);
     margin-bottom: 24px;
   }
 
   .breadcrumb-nav a {
-    color: var(--text-muted);
+    color: var(--cyber-cyan);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .breadcrumb-nav .slash {
+    color: rgba(255, 255, 255, 0.2);
   }
 
   .breadcrumb-nav .active {
-    color: #ffffff;
-    font-weight: 600;
+    color: #e2e8f0;
   }
 
   .result-master-card {
     padding: 40px;
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     max-width: 960px;
     margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-master-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-purple), var(--cyber-emerald));
   }
 
   .result-banner-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 16px;
+    padding-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .badge-pass {
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(0, 245, 160, 0.15);
+    color: var(--cyber-emerald);
+    border: 1px solid rgba(0, 245, 160, 0.4);
     font-weight: 700;
-    padding: 6px 16px;
-    border-radius: 20px;
+    padding: 6px 18px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.04em;
+    font-size: 0.82rem;
+    box-shadow: 0 0 15px rgba(0, 245, 160, 0.2);
   }
 
   .badge-fail {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: rgba(255, 0, 85, 0.15);
+    color: var(--cyber-crimson);
+    border: 1px solid rgba(255, 0, 85, 0.4);
     font-weight: 700;
-    padding: 6px 16px;
-    border-radius: 20px;
+    padding: 6px 18px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.04em;
+    font-size: 0.82rem;
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
   }
 
   .exam-date {
@@ -218,30 +273,33 @@ const secondsSpent = result.time_spent_seconds % 60;
   }
 
   .result-title {
-    font-size: 1.85rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #ffffff;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
   }
 
   .result-user-meta {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--text-muted);
   }
 
   .mono-code {
     font-family: var(--font-mono);
-    color: #60a5fa;
+    color: var(--cyber-cyan);
+    background: rgba(0, 242, 254, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 242, 254, 0.2);
   }
 
   .score-hero-grid {
     display: grid;
     grid-template-columns: 1fr auto 1fr auto 1fr;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-md);
-    padding: 24px;
+    border-radius: 14px;
+    padding: 28px 24px;
     margin: 28px 0 36px;
   }
 
@@ -251,40 +309,51 @@ const secondsSpent = result.time_spent_seconds % 60;
 
   .sh-label {
     font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--text-dim);
     text-transform: uppercase;
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
   }
 
   .sh-val {
     font-family: var(--font-mono);
-    font-size: 2.6rem;
+    font-size: 2.8rem;
     font-weight: 900;
-    color: #ffffff;
     line-height: 1.1;
   }
 
-  .text-primary {
-    color: #3b82f6;
+  .text-pass-glow {
+    color: var(--cyber-emerald);
+    text-shadow: 0 0 20px rgba(0, 245, 160, 0.5);
+  }
+
+  .text-fail-glow {
+    color: var(--cyber-crimson);
+    text-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
   }
 
   .text-accent {
-    color: #00c2ff;
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  }
+
+  .text-cyan {
+    color: #e2e8f0;
   }
 
   .sh-sub {
     font-size: 0.78rem;
     color: var(--text-dim);
-    margin-top: 4px;
+    margin-top: 6px;
     display: block;
   }
 
   .sh-divider {
     width: 1px;
     height: 50px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .subtests-breakdown-section {
@@ -292,10 +361,9 @@ const secondsSpent = result.time_spent_seconds % 60;
   }
 
   .section-subheading {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #ffffff;
-    margin-bottom: 18px;
   }
 
   .subtest-cards-grid {
@@ -305,18 +373,25 @@ const secondsSpent = result.time_spent_seconds % 60;
   }
 
   .subtest-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1.5px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius-sm);
-    padding: 20px;
+    background: rgba(18, 27, 49, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 22px;
+    transition: all 0.3s ease;
+  }
+
+  .subtest-card:hover {
+    transform: translateY(-3px);
   }
 
   .subtest-card.passed {
-    border-color: rgba(16, 185, 129, 0.35);
+    border-color: rgba(0, 245, 160, 0.35);
+    box-shadow: 0 0 15px rgba(0, 245, 160, 0.1);
   }
 
   .subtest-card.failed {
-    border-color: rgba(239, 68, 68, 0.35);
+    border-color: rgba(255, 0, 85, 0.35);
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.1);
   }
 
   .st-card-top {
@@ -329,12 +404,13 @@ const secondsSpent = result.time_spent_seconds % 60;
   .st-name {
     font-size: 1rem;
     color: #ffffff;
-    margin-top: 4px;
+    margin-top: 6px;
+    font-weight: 700;
   }
 
   .st-score {
     font-family: var(--font-mono);
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 800;
   }
 
@@ -348,11 +424,14 @@ const secondsSpent = result.time_spent_seconds % 60;
     justify-content: space-between;
     font-size: 0.82rem;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
   }
 
-  .text-pass { color: #10b981; }
-  .text-fail { color: #ef4444; }
+  .text-pass { color: var(--cyber-emerald); }
+  .text-fail { color: var(--cyber-crimson); }
+  .text-green { color: var(--cyber-emerald); }
+  .text-red { color: var(--cyber-crimson); }
 
   .progress-track {
     width: 100%;
@@ -360,58 +439,61 @@ const secondsSpent = result.time_spent_seconds % 60;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .progress-fill {
     height: 100%;
-    transition: width 0.6s ease;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .fill-pass { background: #10b981; }
-  .fill-fail { background: #ef4444; }
+  .fill-pass {
+    background: linear-gradient(90deg, #00b09b, var(--cyber-emerald));
+    box-shadow: 0 0 10px rgba(0, 245, 160, 0.5);
+  }
+
+  .fill-fail {
+    background: linear-gradient(90deg, #cb2d3e, var(--cyber-crimson));
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+  }
 
   .st-counts {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
     color: var(--text-dim);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 8px;
-  }
-
-  .st-counts strong {
-    color: #ffffff;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 10px;
   }
 
   .recommendations-box {
-    background: rgba(21, 94, 239, 0.08);
-    border: 1px solid rgba(21, 94, 239, 0.25);
-    border-radius: var(--radius-sm);
-    padding: 22px;
+    border-radius: 14px;
+    padding: 24px;
     margin-bottom: 36px;
   }
 
   .rec-title {
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: #ffffff;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    font-weight: 700;
   }
 
   .rec-list {
     padding-left: 20px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    margin: 0;
   }
 
   .rec-list li {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    line-height: 1.5;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    line-height: 1.55;
   }
 
   .result-actions-bar {
@@ -423,10 +505,13 @@ const secondsSpent = result.time_spent_seconds % 60;
   @media (max-width: 768px) {
     .score-hero-grid {
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: 20px;
     }
     .sh-divider {
       display: none;
+    }
+    .result-master-card {
+      padding: 24px;
     }
   }
 </style>

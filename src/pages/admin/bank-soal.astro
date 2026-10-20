@@ -24,18 +24,22 @@ const questions = queryAll(`
     <div class="container">
       <!-- Breadcrumb -->
       <div class="admin-breadcrumb">
-        <a href="/admin">Backoffice</a>
+        <a href="/admin" onclick="window.playCyberSound?.('click')">COMMAND_DECK</a>
         <span>/</span>
-        <span>Bank Soal</span>
+        <span class="active mono-font">BANK_SOAL.SYS</span>
       </div>
 
       <!-- Top Header -->
-      <div class="admin-page-header">
+      <div class="admin-page-header cyber-card" style="padding: 24px 28px; background: rgba(8, 13, 26, 0.85); border: 1px solid rgba(0, 242, 254, 0.25); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.4);">
         <div>
-          <h1 class="page-title">Bank Butir Soal Ujian CAT</h1>
+          <div class="telemetry-pill mb-2" style="font-size: 0.72rem; display: inline-flex;">
+            <span class="beacon"></span>
+            ITEM_BANK_VAULT // {questions.length} BUTIR SOAL TERVERIFIKASI
+          </div>
+          <h1 class="page-title cyber-glitch-title">Bank Butir Soal Ujian CAT</h1>
           <p class="page-subtitle">Pusat repositori butir soal dengan pembobotan adaptif dan metadata HOTS terverifikasi.</p>
         </div>
-        <button class="btn btn-primary" onclick="openCreateModal()">
+        <button class="btn btn-primary" onclick="window.playCyberSound?.('open'); openCreateModal();">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -46,11 +50,11 @@ const questions = queryAll(`
 
       <!-- Submenu Navigation -->
       <div class="admin-nav-bar">
-        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
-        <a href="/admin/bank-soal" class="admin-nav-item active">Bank Soal ({questions.length})</a>
-        <a href="/admin/review-soal" class="admin-nav-item">Review Editorial</a>
-        <a href="/admin/paket-ujian" class="admin-nav-item">Paket Ujian & Rules</a>
-        <a href="/admin/audit-log" class="admin-nav-item">Audit Log</a>
+        <a href="/admin" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item active" onclick="window.playCyberSound?.('click')">Bank Soal ({questions.length})</a>
+        <a href="/admin/review-soal" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Review Editorial</a>
+        <a href="/admin/paket-ujian" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Paket Ujian & Rules</a>
+        <a href="/admin/audit-log" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Audit Log</a>
       </div>
 
       <!-- Filter Controls Bar -->

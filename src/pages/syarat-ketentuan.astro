@@ -6,38 +6,62 @@ import Layout from '../layouts/Layout.astro';
   <div class="legal-page-wrapper">
     <div class="container">
       <div class="legal-header">
-        <span class="badge-pill">SYARAT & KETENTUAN PENGGUNAAN</span>
-        <h1 class="page-title">Syarat & Ketentuan SIMCAT Indonesia</h1>
-        <p class="page-subtitle">Terakhir Diperbarui: 19 Oktober 2026</p>
+        <div class="telemetry-pill mb-2" style="font-size: 0.75rem; display: inline-flex;">
+          <span class="beacon"></span>
+          LEGAL_OPERATIONAL_FRAMEWORK // VERSI 2026.1
+        </div>
+        <h1 class="page-title cyber-glitch-title">Syarat & Ketentuan Penggunaan SIMCAT</h1>
+        <p class="page-subtitle mono-font">STATUS PROTOKOL: DOKUMEN RESMI MENGIKAT • TERAKHIR DIPERBARUI: OKTOBER 2026</p>
       </div>
 
-      <div class="legal-content glass-panel">
-        <h2>1. Penerimaan Ketentuan</h2>
+      <div class="legal-content cyber-card" style="background: rgba(8, 13, 26, 0.85); border: 1px solid rgba(0, 242, 254, 0.22); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 242, 254, 0.08);">
+        <div class="section-badge-row">
+          <span class="telemetry-pill" style="font-size: 0.7rem;">KLAUSUL 01 // KONSENSI PENGGUNA</span>
+        </div>
+        <h2>1. Penerimaan Ketentuan Layanan</h2>
         <p>
           Dengan mengakses atau menggunakan platform SIMCAT (Simulasi Computer Assisted Test), Anda menyatakan telah membaca, memahami, dan menyetujui untuk terikat oleh seluruh syarat dan ketentuan yang diatur di bawah ini.
         </p>
 
-        <h2>2. Sifat Layanan & Disclaimer Resmi</h2>
+        <div class="section-badge-row">
+          <span class="telemetry-pill" style="font-size: 0.7rem;">KLAUSUL 02 // DISCLAIMER INDEPENDENSI</span>
+        </div>
+        <h2>2. Sifat Layanan & Penafian (Disclaimer) Resmi</h2>
         <p>
           SIMCAT adalah media pembelajaran mandiri independen untuk membantu calon peserta mempersiapkan diri menghadapi seleksi CAT (CPNS, PPPK, BUMN, dan Kedinasan).
         </p>
-        <div class="legal-highlight">
-          <strong>PENTING:</strong> SIMCAT bukan instansi resmi pemerintah dan tidak menjamin kelulusan peserta pada ujian seleksi resmi instansi manapun. Kelulusan sepenuhnya bergantung pada kesiapan individu dan hasil ujian resmi yang diselenggarakan oleh BKN/Panselnas.
+        <div class="legal-highlight cyber-card" style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.35); border-left: 4px solid var(--cyber-amber); color: #fde047; padding: 18px 20px; border-radius: 10px; margin: 16px 0 24px;">
+          <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 0.92rem; margin-bottom: 6px;">
+            <span>⚠️</span>
+            <span>PERINGATAN RESMI:</span>
+          </div>
+          <span style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.55;">
+            SIMCAT bukan instansi resmi pemerintah dan tidak menjamin kelulusan peserta pada ujian seleksi resmi instansi manapun. Kelulusan sepenuhnya bergantung pada kesiapan individu dan hasil ujian resmi yang diselenggarakan oleh BKN/Panselnas.
+          </span>
         </div>
 
+        <div class="section-badge-row">
+          <span class="telemetry-pill" style="font-size: 0.7rem;">KLAUSUL 03 // HAK CIPTA INTELEKTUAL</span>
+        </div>
         <h2>3. Integritas Akun & Hak Cipta Butir Soal</h2>
-        <ul>
+        <ul class="cyber-list">
           <li>Seluruh naskah soal, stimulus bacaan, grafik, algoritma penilaian, dan pembahasan trik cepat merupakan karya intelektual yang dilindungi undang-undang hak cipta.</li>
           <li>Dilarang keras menyalin, menggandakan, mendistribusikan ulang, atau mengkomersialkan materi soal SIMCAT tanpa izin tertulis dari tim pengembang.</li>
-          <li>Satu akun peserta hanya berlaku untuk satu individu dan dilarang dipindahtangankan.</li>
+          <li>Satu akun peserta hanya berlaku untuk satu individu dan dilarang dipindahtangankan atau digunakan secara multi-login serentak.</li>
         </ul>
 
+        <div class="section-badge-row">
+          <span class="telemetry-pill" style="font-size: 0.7rem;">KLAUSUL 04 // PROTOKOL KEAMANAN</span>
+        </div>
         <h2>4. Penggunaan Server & Larangan Kecurangan</h2>
         <p>
           Pengguna dilarang melakukan tindakan eksploitasi keamanan, injeksi skrip peretas, manipulasi timer browser, atau upaya memintas validasi backend server SIMCAT. Segala percobaan manipulasi akan tercatat pada log audit dan mengakibatkan pemblokiran akun permanen.
         </p>
 
-        <h2>5. Perubahan Ketentuan</h2>
+        <div class="section-badge-row">
+          <span class="telemetry-pill" style="font-size: 0.7rem;">KLAUSUL 05 // EVOLUSI REGULASI</span>
+        </div>
+        <h2>5. Perubahan Ketentuan Regulasi</h2>
         <p>
           SIMCAT berhak memperbarui syarat dan ketentuan ini sewaktu-waktu guna menyesuaikan dengan pembaruan regulasi seleksi nasional terbaru dari pemerintah Republik Indonesia.
         </p>
@@ -53,77 +77,85 @@ import Layout from '../layouts/Layout.astro';
 
   .legal-header {
     max-width: 800px;
-    margin: 0 auto 32px;
+    margin: 0 auto 36px;
     text-align: center;
   }
 
-  .badge-pill {
-    display: inline-block;
-    padding: 4px 14px;
-    border-radius: 99px;
-    background: rgba(0, 194, 255, 0.15);
-    border: 1px solid rgba(0, 194, 255, 0.3);
-    color: #00c2ff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
-  }
-
   .page-title {
-    font-size: 2.2rem;
+    font-size: 2.3rem;
     font-weight: 800;
     color: #ffffff;
-    margin: 0 0 8px;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
   }
 
   .page-subtitle {
-    font-size: 0.95rem;
-    color: #94a3b8;
+    font-size: 0.82rem;
+    color: var(--cyber-cyan);
     margin: 0;
+    letter-spacing: 0.06em;
   }
 
   .legal-content {
-    max-width: 860px;
+    max-width: 880px;
     margin: 0 auto;
-    padding: 36px 40px;
-    border-radius: 18px;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 42px 48px;
+    border-radius: 20px;
     color: #cbd5e1;
-    line-height: 1.65;
+    line-height: 1.7;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .legal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-amber), var(--cyber-purple));
+  }
+
+  .section-badge-row {
+    margin-top: 28px;
+    margin-bottom: 6px;
+  }
+
+  .section-badge-row:first-of-type {
+    margin-top: 0;
   }
 
   .legal-content h2 {
     color: #ffffff;
-    font-size: 1.25rem;
-    margin: 24px 0 10px;
-  }
-
-  .legal-content h2:first-of-type {
-    margin-top: 0;
+    font-size: 1.3rem;
+    margin: 0 0 12px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
   }
 
   .legal-content p {
     font-size: 0.95rem;
-    margin: 0 0 14px;
+    margin: 0 0 16px;
+    color: #94a3b8;
   }
 
-  .legal-highlight {
-    padding: 16px;
-    border-radius: 10px;
-    background: rgba(245, 158, 11, 0.1);
-    border-left: 4px solid #f59e0b;
-    color: #fbbf24;
-    font-size: 0.9rem;
-    margin: 16px 0 20px;
-  }
-
-  .legal-content ul {
-    margin: 0 0 18px;
+  .cyber-list {
+    margin: 0 0 20px;
     padding-left: 20px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .cyber-list li {
+    font-size: 0.92rem;
+    color: #94a3b8;
+  }
+
+  @media (max-width: 768px) {
+    .legal-content {
+      padding: 28px 20px;
+    }
   }
 </style>

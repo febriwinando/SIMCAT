@@ -8,23 +8,23 @@ import { allPackages } from '../data';
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="container hero-container">
+      <!-- High Tech Badge Pill -->
       <div class="hero-badge-wrap">
-        <span class="badge badge-cpns">
-          <span class="sparkle-icon">✨</span>
-          SIMCAT Portal 2026
-        </span>
-        <span class="badge badge-pppk">Standar Resmi CAT BKN</span>
+        <div class="bkn-badge-pill">
+          <span class="badge-dot"></span>
+          <span>⚡ PROTOCOL CAT-2026 // STANDAR RESMI BKN & MENPAN-RB</span>
+        </div>
       </div>
 
       <!-- Logged-in Candidate Info Strip -->
-      <div class="hero-candidate-status glass-panel" id="hero-user-strip" style="display: none;">
+      <div class="hero-candidate-status cyber-card" id="hero-user-strip" style="display: none;">
         <div class="user-strip-avatar" id="hero-avatar">CP</div>
         <div class="user-strip-details">
           <div class="user-strip-greeting">
-            <span class="status-pulse-dot"></span>
+            <span class="status-pulse-dot pulse-dot-green"></span>
             Peserta Aktif Terverifikasi: <strong id="hero-user-name" class="text-highlight">-</strong>
           </div>
-          <div class="user-strip-sub" id="hero-user-sub">-</div>
+          <div class="user-strip-sub font-mono" id="hero-user-sub">-</div>
         </div>
         <div class="user-strip-action">
           <a href="/simulasi/cpns-skd" class="btn btn-primary user-strip-btn">
@@ -34,12 +34,12 @@ import { allPackages } from '../data';
       </div>
 
       <h1 class="hero-title">
-        Simulasi CAT Terstandarisasi <br />
+        Simulasi CAT Generasi Masa Depan <br />
         <span class="gradient-text">CPNS • PPPK • BUMN • KEDINASAN</span>
       </h1>
 
       <p class="hero-desc">
-        Tingkatkan peluang kelulusan seleksi nasional dengan <strong>SIMCAT</strong> — platform Computer Assisted Test berbasis web modern. Dilengkapi timer server otoritatif, penilaian ambang batas (Passing Grade), autosave kontinu, dan pembahasan trik cepat.
+        Tingkatkan peluang kelulusan seleksi nasional dengan <strong>SIMCAT</strong> — platform Computer Assisted Test berbasis web modern. Dilengkapi timer server-authoritative, penilaian ambang batas (Passing Grade) otomatis, sinkronisasi autosave presisi, dan pembahasan taktis.
       </p>
 
       <div class="hero-actions">
@@ -47,7 +47,7 @@ import { allPackages } from '../data';
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
-          Mulai Simulasi CAT
+          Mulai Simulasi CAT 2026
         </a>
         <a href="/kategori" class="btn btn-secondary hero-btn-sub" id="hero-guide-kategori">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,30 +56,100 @@ import { allPackages } from '../data';
             <rect x="14" y="14" width="7" height="7"></rect>
             <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
-          Pilih 4 Rumpun Seleksi
+          Katalog 4 Rumpun Seleksi
         </a>
       </div>
 
-      <!-- Hero Highlight Metrics -->
-      <div class="hero-metrics-bar glass-panel">
+      <!-- Interactive Futuristic CAT Cockpit Preview Widget -->
+      <div class="hero-cockpit-preview cyber-card">
+        <div class="cockpit-top-bar">
+          <div class="cockpit-indicators">
+            <span class="cockpit-dot red"></span>
+            <span class="cockpit-dot yellow"></span>
+            <span class="cockpit-dot green"></span>
+            <span class="cockpit-title font-mono">[ COCKPIT HUD // LIVE CAT ENGINE PREVIEW ]</span>
+          </div>
+          <div class="cockpit-server-tag font-mono">
+            <span class="status-pulse-dot pulse-dot-green"></span>
+            SERVER TIME SYNCED
+          </div>
+        </div>
+
+        <div class="cockpit-grid">
+          <!-- Live Timer Display -->
+          <div class="cockpit-box timer-cockpit">
+            <span class="cb-label font-mono">⏱️ SERVER COUNTDOWN</span>
+            <div class="cb-timer-digits font-mono" id="preview-countdown">01:39:48</div>
+            <span class="cb-sub font-mono">100 MENIT • AMBANG BATAS AKTIF</span>
+          </div>
+
+          <!-- Answer Palette Simulator -->
+          <div class="cockpit-box palette-cockpit">
+            <span class="cb-label font-mono">🎯 LEMBAR PALET SOAL CAT</span>
+            <div class="cb-palette-chips">
+              <span class="palette-chip answered font-mono" title="Soal Dijawab">01</span>
+              <span class="palette-chip answered font-mono" title="Soal Dijawab">02</span>
+              <span class="palette-chip answered font-mono" title="Soal Dijawab">03</span>
+              <span class="palette-chip review font-mono" title="Ragu-Ragu">04 ?</span>
+              <span class="palette-chip current font-mono" title="Sedang Dikerjakan">05</span>
+              <span class="palette-chip empty font-mono">06</span>
+              <span class="palette-chip empty font-mono">07</span>
+              <span class="palette-chip empty font-mono">08</span>
+            </div>
+            <div class="palette-legend font-mono">
+              <span class="leg-item"><span class="leg-color bg-green"></span> Dijawab</span>
+              <span class="leg-item"><span class="leg-color bg-yellow"></span> Ragu-Ragu</span>
+              <span class="leg-item"><span class="leg-color bg-cyan"></span> Aktif</span>
+            </div>
+          </div>
+
+          <!-- Passing Grade Gauge -->
+          <div class="cockpit-box gauge-cockpit">
+            <span class="cb-label font-mono">📊 STATUS AMBANG BATAS SKD</span>
+            <div class="gauge-rows">
+              <div class="gauge-row">
+                <span class="gr-code font-mono">TWK</span>
+                <div class="gr-bar-wrap"><div class="gr-bar" style="width: 85%;"></div></div>
+                <span class="gr-val font-mono text-cyan">95 / 65</span>
+              </div>
+              <div class="gauge-row">
+                <span class="gr-code font-mono">TIU</span>
+                <div class="gr-bar-wrap"><div class="gr-bar" style="width: 78%;"></div></div>
+                <span class="gr-val font-mono text-cyan">115 / 80</span>
+              </div>
+              <div class="gauge-row">
+                <span class="gr-code font-mono">TKP</span>
+                <div class="gr-bar-wrap"><div class="gr-bar" style="width: 90%;"></div></div>
+                <span class="gr-val font-mono text-cyan">188 / 166</span>
+              </div>
+            </div>
+            <div class="gauge-result font-mono text-green">
+              STATUS: MEMENUHI PASSING GRADE (P/L)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Highlight Metrics Bar -->
+      <div class="hero-metrics-bar cyber-card glass-panel">
         <div class="metric-col">
-          <div class="metric-num">100%</div>
+          <div class="metric-num font-mono">100%</div>
           <div class="metric-lbl">Standar CAT BKN & Nasional</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-col">
-          <div class="metric-num">Server-Timer</div>
-          <div class="metric-lbl">Anti-Manipulasi & Akurat</div>
+          <div class="metric-num font-mono">Server-Timer</div>
+          <div class="metric-lbl">Anti-Manipulasi & Presisi</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-col">
-          <div class="metric-num">4 Rumpun</div>
+          <div class="metric-num font-mono">4 Rumpun</div>
           <div class="metric-lbl">CPNS • PPPK • BUMN • KEDINASAN</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-col">
-          <div class="metric-num">Autosave</div>
-          <div class="metric-lbl">Tersimpan Otomatis ke Server</div>
+          <div class="metric-num font-mono">Autosave</div>
+          <div class="metric-lbl">Sinkronisasi Database Kontinu</div>
         </div>
       </div>
     </div>
@@ -89,10 +159,10 @@ import { allPackages } from '../data';
   <section class="packages-section" id="kategori">
     <div class="container">
       <div class="section-header text-center">
-        <span class="section-tag">PILIH PROGRAM SIMULASI</span>
-        <h2 class="section-title">Kategori Ujian Seleksi Nasional</h2>
+        <span class="section-tag font-mono">[ KATALOG PROGRAM UJIAN 2026 ]</span>
+        <h2 class="section-title">Kategori Seleksi Nasional Terlengkap</h2>
         <p class="section-subtitle">
-          Pilih jenis tes sesuai formasi yang Anda lamar. Setiap paket telah disesuaikan dengan aturan bobot dan ambang batas terbaru.
+          Pilih formasi yang Anda tuju. Setiap paket telah disinkronkan dengan bobot penilaian, passing grade, dan durasi ujian resmi.
         </p>
       </div>
 
@@ -108,87 +178,92 @@ import { allPackages } from '../data';
   <section class="features-section">
     <div class="container">
       <div class="section-header text-center">
-        <span class="section-tag">KEUNGGULAN SISTEM</span>
-        <h2 class="section-title">Didesain Seperti Suasana Ujian Sebenarnya</h2>
+        <span class="section-tag font-mono">[ KEUNGGULAN ENGINE CAT ]</span>
+        <h2 class="section-title">Teknologi Simulasi Kelas Profesional</h2>
         <p class="section-subtitle">
-          Fitur-fitur yang dirancang untuk melatih manajemen waktu, ketelitian, dan mental ujian Anda.
+          Dirancang untuk melatih akurasi, ketahanan mental, serta manajemen waktu layaknya hari ujian yang sesungguhnya.
         </p>
       </div>
 
       <div class="features-grid">
-        <div class="feature-item glass-panel">
+        <div class="feature-item cyber-card glass-panel">
           <div class="feature-icon icon-blue">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
-          <h3 class="feature-title">Live Countdown Timer & Audio</h3>
+          <h3 class="feature-title">Server Countdown & Audio Cues</h3>
           <p class="feature-desc">
-            Penghitung mundur waktu otomatis dengan indikator peringatan visual warna merah dan bunyi peringatan saat waktu tersisa 5 menit.
+            Penghitung mundur waktu terkoordinasi server dengan indikator visual dan sinyal audio saat tersisa 5 menit terakhir untuk melatih ritme pengerjaan.
           </p>
         </div>
 
-        <div class="feature-item glass-panel">
+        <div class="feature-item cyber-card glass-panel">
           <div class="feature-icon icon-green">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
-          <h3 class="feature-title">Palet Soal & Status Ragu-Ragu</h3>
+          <h3 class="feature-title">Navigasi Palet & Ragu-Ragu</h3>
           <p class="feature-desc">
-            Warna navigasi standar CAT: Hijau untuk soal dijawab, Kuning untuk ragu-ragu, dan Abu-abu untuk soal yang belum dijawab.
+            Sistem penandaan standar BKN: Hijau untuk dijawab, Kuning untuk ragu-ragu, dan Abu-abu untuk soal terlewat, memudahkan review sebelum submit.
           </p>
         </div>
 
-        <div class="feature-item glass-panel">
+        <div class="feature-item cyber-card glass-panel">
           <div class="feature-icon icon-yellow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
               <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
           </div>
-          <h3 class="feature-title">Kalkulasi Passing Grade Otomatis</h3>
+          <h3 class="feature-title">Ambang Batas Instan</h3>
           <p class="feature-desc">
-            Sistem langsung menghitung nilai subtes TWK, TIU, TKP sesuai formula KepmenPAN-RB dan menentukan status kelulusan Anda secara instan.
+            Algoritma penilaian menghitung bobot subtes TWK, TIU, TKP secara instan sesuai formula KepmenPAN-RB dan langsung menampilkan status kelulusan (P/L).
           </p>
         </div>
 
-        <div class="feature-item glass-panel">
+        <div class="feature-item cyber-card glass-panel">
           <div class="feature-icon icon-purple">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
           </div>
-          <h3 class="feature-title">Analisis & Evaluasi Lengkap</h3>
+          <h3 class="feature-title">Analisis Peta Kelemahan</h3>
           <p class="feature-desc">
-            Dapatkan evaluasi mendalam setelah simulasi dengan kunci jawaban resmi, rincian skor per opsi, serta tips dan trik cepat BKN.
+            Evaluasi mendalam per subtopik materi dengan pembahasan trik cepat, rincian skor per butir opsi, serta rekomendasi fokus belajar.
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA Banner -->
+  <!-- CTA Banner Section -->
   <section class="cta-banner-section">
     <div class="container">
-      <div class="cta-banner-card glass-panel">
+      <div class="cta-banner-card cyber-card glass-panel">
         <div class="cta-banner-content">
-          <span class="badge badge-cpns" style="margin-bottom: 12px;">Mulai Belajar Sekarang</span>
-          <h2 class="cta-banner-title">Siap Hadapi Ujian Seleksi Tahun 2026?</h2>
+          <div class="bkn-badge-pill">
+            <span class="badge-dot"></span>
+            SIAPKAN DIRI ANDA HARI INI
+          </div>
+          <h2 class="cta-banner-title">Siap Taklukkan Ambang Batas Ujian 2026?</h2>
           <p class="cta-banner-desc">
-            Jangan tunggu hingga jadwal pendaftaran dibuka. Biasakan diri dengan format soal dan ritme waktu ujian CAT mulai dari hari ini.
+            Jangan tunggu hingga jadwal pendaftaran resmi dibuka. Biasakan diri dengan format soal HOTS, ritme waktu, dan suasana CAT mulai sekarang.
           </p>
           <div class="cta-banner-buttons">
             <a href="/simulasi/cpns-skd" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
               Coba Simulasi SKD Gratis
             </a>
-            <a href="/riwayat" class="btn btn-secondary">
-              Periksa Riwayat Skor Anda
+            <a href="/dashboard/riwayat" class="btn btn-secondary">
+              Periksa Riwayat Nilai & Scorecard
             </a>
           </div>
         </div>
@@ -196,7 +271,7 @@ import { allPackages } from '../data';
     </div>
   </section>
 
-  <!-- Script Cek Login Peserta -->
+  <!-- Candidate Session Sync & Navigation Interceptor -->
   <script is:inline>
     (function () {
       const AUTH_KEY = 'cat_user_session';
@@ -240,16 +315,24 @@ import { allPackages } from '../data';
 
         const user = getSession();
         if (!user) {
-          // JIKA BELUM LOGIN:
-          // Cegah langsung buka simulasi, dan arahkan user untuk login
           e.preventDefault();
           const targetUrl = target.getAttribute('href');
           window.location.href = `/login?redirect=${encodeURIComponent(targetUrl)}`;
-        } else {
-          // JIKA SUDAH LOGIN:
-          // Arahkan langsung untuk mengerjakan simulasi (biarkan browser membuka link normal)
         }
       });
+
+      // Preview Countdown Ticking Simulation
+      const countdownEl = document.getElementById('preview-countdown');
+      if (countdownEl) {
+        let totalSeconds = 99 * 60 + 48;
+        setInterval(function () {
+          if (totalSeconds > 0) totalSeconds--;
+          const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+          const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+          const secs = String(totalSeconds % 60).padStart(2, '0');
+          countdownEl.textContent = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+      }
 
       window.addEventListener('auth-state-changed', syncUserHome);
       document.addEventListener('DOMContentLoaded', syncUserHome);
@@ -273,12 +356,7 @@ import { allPackages } from '../data';
   }
 
   .hero-badge-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     margin-bottom: 24px;
-    flex-wrap: wrap;
-    justify-content: center;
   }
 
   /* Candidate Active Status Strip */
@@ -286,22 +364,22 @@ import { allPackages } from '../data';
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 12px 20px;
-    margin-bottom: 24px;
+    padding: 14px 24px;
+    margin-bottom: 28px;
     border-radius: var(--radius-full);
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
-    max-width: 650px;
+    background: rgba(0, 245, 160, 0.08);
+    border: 1px solid rgba(0, 245, 160, 0.4);
+    box-shadow: 0 4px 25px rgba(0, 245, 160, 0.2);
+    max-width: 680px;
     text-align: left;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.4s ease;
   }
 
   .user-strip-avatar {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #00f5a0 0%, #0284c7 100%);
     color: #ffffff;
     font-weight: 800;
     font-size: 0.95rem;
@@ -309,6 +387,7 @@ import { allPackages } from '../data';
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(0, 245, 160, 0.4);
   }
 
   .user-strip-details {
@@ -319,88 +398,266 @@ import { allPackages } from '../data';
   .user-strip-greeting {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+    gap: 8px;
+    font-size: 0.85rem;
     color: var(--text-muted);
   }
 
-  .status-pulse-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 8px #10b981;
-  }
-
   .text-highlight {
-    color: #34d399;
+    color: #00f5a0;
   }
 
   .user-strip-sub {
-    font-size: 0.78rem;
-    color: var(--text-dim);
+    font-size: 0.76rem;
+    color: #94a3b8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .user-strip-btn {
-    padding: 8px 16px;
+    padding: 8px 18px;
     font-size: 0.82rem;
     border-radius: var(--radius-full);
     white-space: nowrap;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .sparkle-icon {
-    font-size: 0.9rem;
-  }
-
   .hero-title {
-    font-size: 3.2rem;
+    font-size: 3.4rem;
     font-weight: 800;
     line-height: 1.15;
-    margin-bottom: 20px;
-    max-width: 950px;
-  }
-
-  .gradient-text {
-    background: linear-gradient(135deg, #60a5fa 0%, #34d399 50%, #fbbf24 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    margin-bottom: 22px;
+    max-width: 980px;
   }
 
   .hero-desc {
     font-size: 1.15rem;
     color: var(--text-muted);
-    max-width: 780px;
-    line-height: 1.6;
-    margin-bottom: 32px;
+    max-width: 800px;
+    line-height: 1.65;
+    margin-bottom: 34px;
   }
 
   .hero-actions {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 50px;
+    margin-bottom: 45px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
   .hero-btn-main {
-    padding: 14px 28px;
+    padding: 15px 32px;
     font-size: 1.05rem;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
   }
 
   .hero-btn-sub {
-    padding: 14px 24px;
+    padding: 15px 28px;
     font-size: 1.05rem;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Interactive Futuristic Cockpit Preview Widget */
+  .hero-cockpit-preview {
+    width: 100%;
+    max-width: 1050px;
+    background: rgba(8, 12, 24, 0.85);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 242, 254, 0.15);
+    margin-bottom: 40px;
+    overflow: hidden;
+    text-align: left;
+  }
+
+  .cockpit-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .cockpit-indicators {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cockpit-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .cockpit-dot.red { background: #ff0055; box-shadow: 0 0 6px #ff0055; }
+  .cockpit-dot.yellow { background: #ffb703; box-shadow: 0 0 6px #ffb703; }
+  .cockpit-dot.green { background: #00f5a0; box-shadow: 0 0 6px #00f5a0; }
+
+  .cockpit-title {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-left: 8px;
+  }
+
+  .cockpit-server-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #00f5a0;
+  }
+
+  .cockpit-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.3fr 1.4fr;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  .cockpit-box {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: var(--radius-md);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .cb-label {
+    font-size: 0.7rem;
+    color: #38bdf8;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .cb-timer-digits {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .cb-sub {
+    font-size: 0.68rem;
+    color: #64748b;
+  }
+
+  .cb-palette-chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 10px 0 12px;
+  }
+
+  .palette-chip {
+    padding: 6px 0;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 6px;
+  }
+
+  .palette-chip.answered {
+    background: rgba(0, 245, 160, 0.15);
+    border: 1px solid rgba(0, 245, 160, 0.4);
+    color: #00f5a0;
+  }
+
+  .palette-chip.review {
+    background: rgba(255, 183, 3, 0.15);
+    border: 1px solid rgba(255, 183, 3, 0.4);
+    color: #ffb703;
+  }
+
+  .palette-chip.current {
+    background: rgba(0, 242, 254, 0.25);
+    border: 1px solid #00f2fe;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+  }
+
+  .palette-chip.empty {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #64748b;
+  }
+
+  .palette-legend {
+    display: flex;
+    gap: 12px;
+    font-size: 0.66rem;
+    color: #94a3b8;
+  }
+
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .leg-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+
+  .bg-green { background: #00f5a0; }
+  .bg-yellow { background: #ffb703; }
+  .bg-cyan { background: #00f2fe; }
+
+  .gauge-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0 12px;
+  }
+
+  .gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .gr-code {
+    width: 32px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .gr-bar-wrap {
+    flex: 1;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .gr-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00f2fe, #00f5a0);
+    border-radius: 4px;
+  }
+
+  .gr-val {
+    font-size: 0.74rem;
+    font-weight: 700;
+    width: 60px;
+    text-align: right;
+  }
+
+  .gauge-result {
+    font-size: 0.7rem;
+    font-weight: 700;
   }
 
   /* Hero Metrics Bar */
@@ -408,10 +665,12 @@ import { allPackages } from '../data';
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 20px 30px;
+    padding: 22px 30px;
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 1050px;
+    background: rgba(8, 12, 24, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .metric-col {
@@ -422,28 +681,28 @@ import { allPackages } from '../data';
   }
 
   .metric-num {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
+    font-size: 1.7rem;
     font-weight: 800;
     color: #ffffff;
+    text-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
   }
 
   .metric-lbl {
-    font-size: 0.78rem;
-    color: var(--text-muted);
+    font-size: 0.76rem;
+    color: #94a3b8;
     font-weight: 600;
     margin-top: 4px;
   }
 
   .metric-divider {
     width: 1px;
-    height: 38px;
-    background: var(--border-subtle);
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   /* Section Common */
   .section-header {
-    margin-bottom: 40px;
+    margin-bottom: 45px;
   }
 
   .text-center {
@@ -455,39 +714,41 @@ import { allPackages } from '../data';
     font-size: 0.78rem;
     font-weight: 800;
     color: #38bdf8;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
   }
 
   .section-title {
-    font-size: 2.3rem;
+    font-size: 2.4rem;
     color: #ffffff;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .section-subtitle {
     font-size: 1.05rem;
     color: var(--text-muted);
-    max-width: 680px;
+    max-width: 700px;
     margin: 0 auto;
     line-height: 1.6;
   }
 
   /* Packages Grid */
   .packages-section {
-    padding: 80px 0;
+    padding: 90px 0;
   }
 
   .packages-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-    gap: 24px;
+    gap: 28px;
   }
 
   /* Features Section */
   .features-section {
-    padding: 80px 0;
-    background: rgba(0, 0, 0, 0.2);
+    padding: 90px 0;
+    background: rgba(4, 6, 13, 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .features-grid {
@@ -497,16 +758,23 @@ import { allPackages } from '../data';
   }
 
   .feature-item {
-    padding: 28px;
-    border-radius: var(--radius-md);
+    padding: 30px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    background: rgba(10, 15, 29, 0.8);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .feature-item:hover {
+    transform: translateY(-6px);
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 242, 254, 0.2);
   }
 
   .feature-icon {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -514,13 +782,13 @@ import { allPackages } from '../data';
     margin-bottom: 6px;
   }
 
-  .icon-blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-  .icon-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-  .icon-yellow { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-  .icon-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+  .icon-blue { background: rgba(0, 242, 254, 0.12); color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.3); }
+  .icon-green { background: rgba(0, 245, 160, 0.12); color: #00f5a0; border: 1px solid rgba(0, 245, 160, 0.3); }
+  .icon-yellow { background: rgba(255, 183, 3, 0.12); color: #ffb703; border: 1px solid rgba(255, 183, 3, 0.3); }
+  .icon-purple { background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
 
   .feature-title {
-    font-size: 1.15rem;
+    font-size: 1.18rem;
     color: #ffffff;
   }
 
@@ -532,33 +800,34 @@ import { allPackages } from '../data';
 
   /* CTA Banner */
   .cta-banner-section {
-    padding: 60px 0 100px;
+    padding: 70px 0 110px;
   }
 
   .cta-banner-card {
-    padding: 50px 30px;
+    padding: 60px 40px;
     text-align: center;
     border-radius: var(--radius-lg);
-    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), rgba(17, 24, 39, 0.9) 70%);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.18), rgba(6, 10, 20, 0.95) 75%);
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 242, 254, 0.15);
   }
 
   .cta-banner-content {
-    max-width: 680px;
+    max-width: 720px;
     margin: 0 auto;
   }
 
   .cta-banner-title {
-    font-size: 2.2rem;
+    font-size: 2.3rem;
     color: #ffffff;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .cta-banner-desc {
     font-size: 1.05rem;
     color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 28px;
+    line-height: 1.65;
+    margin-bottom: 32px;
   }
 
   .cta-banner-buttons {
@@ -569,13 +838,19 @@ import { allPackages } from '../data';
     flex-wrap: wrap;
   }
 
+  @media (max-width: 900px) {
+    .cockpit-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   @media (max-width: 768px) {
     .hero-title {
       font-size: 2.2rem;
     }
     .hero-metrics-bar {
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
     .metric-divider {
       width: 80%;

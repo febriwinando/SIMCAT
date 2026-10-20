@@ -7,10 +7,14 @@ const { currentPath = '/' } = Astro.props;
 ---
 
 <header class="navbar-wrapper">
+  <!-- Glowing Laser Edge Line at bottom of Navbar -->
+  <div class="nav-laser-beam" aria-hidden="true"></div>
+
   <div class="container navbar-inner">
-    <a href="/" class="brand-logo" id="nav-brand-logo">
+    <a href="/" class="brand-logo" id="nav-brand-logo" title="SIMCAT Portal 2026">
       <div class="logo-icon-wrap">
-        <img src="/images/simcat-icon.png" alt="Logo SIMCAT" class="brand-logo-img" width="40" height="40" />
+        <div class="logo-energy-ring"></div>
+        <img src="/images/simcat-icon.png" alt="Logo SIMCAT" class="brand-logo-img" width="38" height="38" />
       </div>
       <div class="brand-text">
         <span class="brand-title">SIM<span class="text-gradient">CAT</span></span>
@@ -18,28 +22,40 @@ const { currentPath = '/' } = Astro.props;
       </div>
     </a>
 
+    <!-- System Status HUD Badge -->
+    <div class="nav-system-status">
+      <span class="status-pulse-dot"></span>
+      <span class="status-label">SYS: ONLINE</span>
+    </div>
+
     <nav class="nav-links">
       <a href="/" class={`nav-item ${currentPath === '/' ? 'active' : ''}`} id="nav-home">
-        Beranda
+        <span class="nav-bracket">[</span>Beranda<span class="nav-bracket">]</span>
       </a>
       <a href="/kategori" class={`nav-item ${currentPath.includes('/kategori') ? 'active' : ''}`} id="nav-kategori">
-        Kategori
+        <span class="nav-bracket">[</span>Kategori<span class="nav-bracket">]</span>
       </a>
       <a href="/paket" class={`nav-item ${currentPath.includes('/paket') ? 'active' : ''}`} id="nav-paket">
-        Paket Ujian
+        <span class="nav-bracket">[</span>Paket Ujian<span class="nav-bracket">]</span>
       </a>
       <a href="/simulasi" class={`nav-item ${currentPath === '/simulasi' || currentPath.startsWith('/simulasi/') ? 'active' : ''}`} id="nav-simulasi">
-        Simulasi CAT
+        <span class="nav-bracket">[</span>Simulasi CAT<span class="nav-bracket">]</span>
       </a>
       <a href="/dashboard" class={`nav-item ${currentPath.includes('/dashboard') ? 'active' : ''}`} id="nav-dashboard">
-        Dashboard
+        <span class="nav-bracket">[</span>Dashboard<span class="nav-bracket">]</span>
       </a>
       <a href="/panduan" class={`nav-item ${currentPath.includes('/panduan') ? 'active' : ''}`} id="nav-panduan">
-        Panduan
+        <span class="nav-bracket">[</span>Panduan<span class="nav-bracket">]</span>
       </a>
     </nav>
 
     <div class="nav-actions">
+      <!-- SFX Interactive Sound Toggle -->
+      <button class="nav-sfx-toggle" id="nav-btn-sfx" title="Toggle Efek Suara Futuristik">
+        <span class="sfx-icon" id="sfx-icon">🔊</span>
+        <span class="sfx-text" id="sfx-text">SFX: ON</span>
+      </button>
+
       <!-- Admin Backoffice Badge (Visible only to admin roles via JS) -->
       <a href="/admin" class="btn btn-warning nav-admin-btn" id="nav-btn-admin" style="display: none;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -53,7 +69,7 @@ const { currentPath = '/' } = Astro.props;
 
       <!-- Unauthenticated State -->
       <a href="/login" class="btn btn-secondary nav-login-btn" id="nav-btn-login">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
           <polyline points="10 17 15 12 10 7"></polyline>
           <line x1="15" y1="12" x2="3" y2="12"></line>
@@ -76,8 +92,9 @@ const { currentPath = '/' } = Astro.props;
         </button>
       </div>
 
-      <a href="/simulasi" class="btn btn-primary" id="btn-quick-tryout">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <a href="/simulasi" class="btn btn-primary nav-cta-btn" id="btn-quick-tryout">
+        <span class="cta-pulse-ring"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
         Mulai CAT
@@ -95,6 +112,32 @@ const { currentPath = '/' } = Astro.props;
     const userNameEl = document.getElementById('nav-user-name');
     const userAvatarEl = document.getElementById('nav-avatar');
     const logoutBtn = document.getElementById('nav-btn-logout');
+    const sfxBtn = document.getElementById('nav-btn-sfx');
+    const sfxIcon = document.getElementById('sfx-icon');
+    const sfxText = document.getElementById('sfx-text');
+
+    // SFX Button sync
+    function syncSFXBtn() {
+      if (!sfxBtn) return;
+      const enabled = typeof window.isSFXEnabled === 'function' ? window.isSFXEnabled() : true;
+      if (sfxIcon) sfxIcon.textContent = enabled ? '🔊' : '🔇';
+      if (sfxText) sfxText.textContent = enabled ? 'SFX: ON' : 'SFX: OFF';
+      if (enabled) {
+        sfxBtn.classList.remove('sfx-muted');
+      } else {
+        sfxBtn.classList.add('sfx-muted');
+      }
+    }
+
+    if (sfxBtn) {
+      sfxBtn.addEventListener('click', function () {
+        if (typeof window.toggleCyberSFX === 'function') {
+          window.toggleCyberSFX();
+          syncSFXBtn();
+        }
+      });
+      syncSFXBtn();
+    }
 
     function syncNavAuth() {
       try {
@@ -154,48 +197,79 @@ const { currentPath = '/' } = Astro.props;
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(11, 15, 25, 0.88);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border-subtle);
+    background: rgba(5, 8, 17, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.3s ease;
+  }
+
+  .nav-laser-beam {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 242, 254, 0.2) 20%,
+      rgba(0, 242, 254, 0.8) 50%,
+      rgba(168, 85, 247, 0.4) 80%,
+      transparent 100%
+    );
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
   }
 
   .navbar-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 72px;
+    height: 74px;
+    gap: 16px;
   }
 
   .brand-logo {
     display: flex;
     align-items: center;
     gap: 12px;
+    position: relative;
   }
 
   .logo-icon-wrap {
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 242, 254, 0.06);
+    border: 1px solid rgba(0, 242, 254, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0, 194, 255, 0.2);
-    transition: all 0.25s ease;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 194, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .logo-energy-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 14px;
+    border: 1px dashed rgba(0, 242, 254, 0.4);
+    pointer-events: none;
+    animation: radarSweep 25s linear infinite;
   }
 
   .brand-logo:hover .logo-icon-wrap {
-    transform: translateY(-1px) scale(1.05);
-    border-color: rgba(0, 194, 255, 0.4);
-    box-shadow: 0 6px 20px rgba(0, 194, 255, 0.35);
+    transform: translateY(-2px) scale(1.05);
+    border-color: rgba(0, 242, 254, 0.6);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
   }
 
   .brand-logo-img {
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 242, 254, 0.3));
   }
 
   .brand-text {
@@ -205,24 +279,39 @@ const { currentPath = '/' } = Astro.props;
 
   .brand-title {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.45rem;
     font-weight: 900;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     color: #ffffff;
-    line-height: 1.05;
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, #00c2ff 0%, #2563eb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
   }
 
   .brand-subtitle {
-    font-size: 0.65rem;
+    font-size: 0.63rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: #38bdf8;
+    font-family: var(--font-mono);
+  }
+
+  /* Telemetry Status in Navbar */
+  .nav-system-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0, 245, 160, 0.06);
+    border: 1px solid rgba(0, 245, 160, 0.25);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: #00f5a0;
+  }
+
+  @media (max-width: 1100px) {
+    .nav-system-status {
+      display: none;
+    }
   }
 
   .nav-links {
@@ -232,23 +321,40 @@ const { currentPath = '/' } = Astro.props;
   }
 
   .nav-item {
-    padding: 8px 13px;
+    padding: 7px 12px;
     font-size: 0.88rem;
     font-weight: 600;
     color: var(--text-muted);
     border-radius: var(--radius-sm);
+    position: relative;
     transition: all 0.2s ease;
+    font-family: var(--font-main);
+  }
+
+  .nav-bracket {
+    font-family: var(--font-mono);
+    color: transparent;
+    transition: color 0.2s ease;
   }
 
   .nav-item:hover {
     color: #ffffff;
-    background: var(--bg-glass);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .nav-item:hover .nav-bracket {
+    color: #00f2fe;
   }
 
   .nav-item.active {
     color: #ffffff;
-    background: var(--bg-glass-active);
-    border: 1px solid var(--border-subtle);
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+  }
+
+  .nav-item.active .nav-bracket {
+    color: #00f2fe;
   }
 
   @media (max-width: 992px) {
@@ -263,28 +369,64 @@ const { currentPath = '/' } = Astro.props;
     gap: 10px;
   }
 
+  /* SFX Sound Toggle */
+  .nav-sfx-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .nav-sfx-toggle:hover {
+    background: rgba(0, 242, 254, 0.1);
+    border-color: rgba(0, 242, 254, 0.35);
+    color: #00f2fe;
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+  }
+
+  .nav-sfx-toggle.sfx-muted {
+    opacity: 0.6;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  @media (max-width: 640px) {
+    .nav-sfx-toggle .sfx-text {
+      display: none;
+    }
+  }
+
   .nav-admin-btn {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     padding: 6px 12px;
-    background: rgba(245, 158, 11, 0.15);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    color: #fbbf24;
+    background: rgba(255, 183, 3, 0.15);
+    border: 1px solid rgba(255, 183, 3, 0.4);
+    color: #ffb703;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    text-decoration: none;
+    font-family: var(--font-mono);
     font-weight: 700;
   }
 
   .nav-admin-btn:hover {
-    background: #f59e0b;
-    color: #080c14;
+    background: #ffb703;
+    color: #060913;
+    box-shadow: 0 0 15px rgba(255, 183, 3, 0.4);
   }
 
   .nav-login-btn {
-    font-size: 0.88rem;
-    padding: 8px 16px;
+    font-size: 0.85rem;
+    padding: 7px 16px;
     border-radius: var(--radius-sm);
   }
 
@@ -292,16 +434,17 @@ const { currentPath = '/' } = Astro.props;
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-subtle);
+    background: rgba(0, 242, 254, 0.06);
+    border: 1px solid rgba(0, 242, 254, 0.3);
     border-radius: var(--radius-full);
-    padding: 3px 4px 3px 10px;
+    padding: 3px 5px 3px 10px;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
     transition: all 0.2s ease;
   }
 
   .nav-user-profile:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(0, 242, 254, 0.6);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
   }
 
   .nav-user-chip {
@@ -318,13 +461,14 @@ const { currentPath = '/' } = Astro.props;
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00c2ff 0%, #0077ff 100%);
+    background: linear-gradient(135deg, #00f2fe 0%, #0072ff 100%);
     color: #ffffff;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
   }
 
   .user-chip-name {
@@ -338,9 +482,9 @@ const { currentPath = '/' } = Astro.props;
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    color: #f87171;
+    background: rgba(255, 0, 85, 0.15);
+    border: 1px solid rgba(255, 0, 85, 0.3);
+    color: #ff4d79;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -349,8 +493,16 @@ const { currentPath = '/' } = Astro.props;
   }
 
   .nav-logout-btn:hover {
-    background: rgba(239, 68, 68, 0.3);
+    background: rgba(255, 0, 85, 0.3);
     color: #ffffff;
-    transform: scale(1.05);
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(255, 0, 85, 0.4);
+  }
+
+  .nav-cta-btn {
+    font-size: 0.88rem;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    position: relative;
   }
 </style>

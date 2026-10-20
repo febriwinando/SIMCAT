@@ -2,6 +2,9 @@
 ---
 
 <footer class="footer-wrapper">
+  <!-- Glowing Laser Divider -->
+  <div class="footer-laser-line" aria-hidden="true"></div>
+
   <div class="container footer-inner">
     <div class="footer-grid">
       <!-- Col 1: Brand & Disclaimer -->
@@ -13,7 +16,7 @@
           <span class="brand-title">SIM<span class="text-gradient">CAT</span></span>
         </div>
         <p class="footer-desc">
-          SIMCAT — Platform simulasi Computer Assisted Test mandiri terstandarisasi untuk persiapan seleksi CPNS, PPPK, BUMN, dan Sekolah Kedinasan dengan algoritma penilaian resmi dan timer server.
+          SIMCAT — Platform simulasi Computer Assisted Test mandiri terstandarisasi untuk persiapan seleksi CPNS, PPPK, BUMN, dan Sekolah Kedinasan dengan algoritma penilaian resmi dan timer server-authoritative.
         </p>
         <div class="cpanel-badge">
           <span class="badge badge-cpns">Standar CAT BKN</span>
@@ -29,38 +32,59 @@
 
       <!-- Col 2: Simulasi & Paket -->
       <div class="footer-col">
-        <h4 class="footer-heading">Katalog Simulasi</h4>
+        <h4 class="footer-heading"><span class="heading-bracket">[</span> Katalog Simulasi <span class="heading-bracket">]</span></h4>
         <ul class="footer-links">
-          <li><a href="/simulasi/cpns-skd">Simulasi CPNS SKD (TWK, TIU, TKP)</a></li>
-          <li><a href="/simulasi/pppk">Seleksi Kompetensi PPPK</a></li>
-          <li><a href="/simulasi/bumn">Rekrutmen Bersama BUMN (TKD & AKHLAK)</a></li>
-          <li><a href="/simulasi/sekolah-kedinasan">SKD Sekolah Kedinasan (IPDN/STAN)</a></li>
-          <li><a href="/paket">Daftar Seluruh Paket Tryout &rarr;</a></li>
+          <li><a href="/simulasi/cpns-skd"><span class="link-arrow">›</span> Simulasi CPNS SKD (TWK, TIU, TKP)</a></li>
+          <li><a href="/simulasi/pppk"><span class="link-arrow">›</span> Seleksi Kompetensi PPPK</a></li>
+          <li><a href="/simulasi/bumn"><span class="link-arrow">›</span> Rekrutmen Bersama BUMN (TKD)</a></li>
+          <li><a href="/simulasi/sekolah-kedinasan"><span class="link-arrow">›</span> SKD Kedinasan (IPDN/STAN)</a></li>
+          <li><a href="/paket" class="highlight-link"><span class="link-arrow">›</span> Seluruh Paket Tryout &rarr;</a></li>
         </ul>
       </div>
 
       <!-- Col 3: Peserta & Panduan -->
       <div class="footer-col">
-        <h4 class="footer-heading">Peserta & Panduan</h4>
+        <h4 class="footer-heading"><span class="heading-bracket">[</span> Peserta & Panduan <span class="heading-bracket">]</span></h4>
         <ul class="footer-links">
-          <li><a href="/dashboard">Dashboard Peserta</a></li>
-          <li><a href="/dashboard/riwayat">Riwayat Nilai & Scorecard</a></li>
-          <li><a href="/dashboard/analisis">Analisis Peta Kelemahan Subtes</a></li>
-          <li><a href="/panduan">Tata Tertib & Sistem Penilaian</a></li>
-          <li><a href="/pusat-bantuan">Pusat Bantuan & FAQ</a></li>
+          <li><a href="/dashboard"><span class="link-arrow">›</span> Dashboard Peserta</a></li>
+          <li><a href="/dashboard/riwayat"><span class="link-arrow">›</span> Riwayat Nilai & Scorecard</a></li>
+          <li><a href="/dashboard/analisis"><span class="link-arrow">›</span> Analisis Peta Kelemahan</a></li>
+          <li><a href="/panduan"><span class="link-arrow">›</span> Tata Tertib & Penilaian</a></li>
+          <li><a href="/pusat-bantuan"><span class="link-arrow">›</span> Pusat Bantuan & FAQ</a></li>
         </ul>
       </div>
 
       <!-- Col 4: Lembaga & Legal -->
       <div class="footer-col">
-        <h4 class="footer-heading">Tentang & Legal</h4>
+        <h4 class="footer-heading"><span class="heading-bracket">[</span> Tentang & Legal <span class="heading-bracket">]</span></h4>
         <ul class="footer-links">
-          <li><a href="/tentang">Tentang Platform SIMCAT</a></li>
-          <li><a href="/dashboard/pembelian">Tryout Akbar & Paket Pro</a></li>
-          <li><a href="/kebijakan-privasi">Kebijakan Privasi</a></li>
-          <li><a href="/syarat-ketentuan">Syarat & Ketentuan Layanan</a></li>
-          <li><a href="/login">Portal Masuk Peserta / Admin</a></li>
+          <li><a href="/tentang"><span class="link-arrow">›</span> Tentang Platform SIMCAT</a></li>
+          <li><a href="/dashboard/pembelian"><span class="link-arrow">›</span> Tryout Akbar & Paket Pro</a></li>
+          <li><a href="/kebijakan-privasi"><span class="link-arrow">›</span> Kebijakan Privasi</a></li>
+          <li><a href="/syarat-ketentuan"><span class="link-arrow">›</span> Syarat & Ketentuan Layanan</a></li>
+          <li><a href="/login"><span class="link-arrow">›</span> Portal Masuk Akun</a></li>
         </ul>
+      </div>
+    </div>
+
+    <!-- Telemetry System Specs Bar -->
+    <div class="footer-specs-bar">
+      <div class="spec-node">
+        <span class="status-pulse-dot pulse-dot-green"></span>
+        <span class="spec-label">CORE ENGINE:</span>
+        <span class="spec-val">SIMCAT v3.2-CPANEL</span>
+      </div>
+      <div class="spec-node">
+        <span class="spec-label">ENCRYPTION:</span>
+        <span class="spec-val">AES-256-GCM</span>
+      </div>
+      <div class="spec-node">
+        <span class="spec-label">TIME PROTOCOL:</span>
+        <span class="spec-val">SERVER-AUTHORITATIVE</span>
+      </div>
+      <div class="spec-node">
+        <span class="spec-label">CAT STANDARDS:</span>
+        <span class="spec-val">BKN / MENPAN-RB 2026</span>
       </div>
     </div>
 
@@ -71,7 +95,7 @@
         <span>•</span>
         <a href="/syarat-ketentuan">Ketentuan</a>
         <span>•</span>
-        <a href="#top">Kembali ke Atas ↑</a>
+        <a href="#top" class="back-top-text">Kembali ke Atas ↑</a>
       </div>
     </div>
   </div>
@@ -80,16 +104,35 @@
 <style>
   .footer-wrapper {
     margin-top: auto;
-    background: #080c14;
-    border-top: 1px solid var(--border-subtle);
-    padding: 60px 0 30px;
+    background: #04060d;
+    position: relative;
+    padding: 70px 0 35px;
     color: var(--text-muted);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+
+  .footer-laser-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 242, 254, 0.3) 25%,
+      rgba(0, 242, 254, 0.8) 50%,
+      rgba(168, 85, 247, 0.4) 75%,
+      transparent
+    );
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
   }
 
   .footer-grid {
     display: grid;
     grid-template-columns: 1.6fr 1.1fr 1.1fr 1fr;
-    gap: 32px;
+    gap: 36px;
     margin-bottom: 45px;
   }
 
@@ -104,17 +147,17 @@
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0, 194, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 194, 255, 0.25);
   }
 
   .brand-logo-img {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
   }
 
@@ -127,99 +170,166 @@
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, #00c2ff 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .footer-desc {
     font-size: 0.88rem;
-    line-height: 1.55;
+    line-height: 1.6;
     color: #94a3b8;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
 
   .cpanel-badge {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 14px;
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   .footer-disclaimer-text {
     font-size: 0.75rem;
+    line-height: 1.5;
     color: #64748b;
-    line-height: 1.45;
   }
 
   .footer-heading {
-    font-size: 0.95rem;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
     font-weight: 700;
     color: #ffffff;
-    margin-bottom: 18px;
-    letter-spacing: 0.03em;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .heading-bracket {
+    font-family: var(--font-mono);
+    color: #00f2fe;
+    font-size: 0.9em;
   }
 
   .footer-links {
     list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 11px;
   }
 
-  .footer-links a {
-    font-size: 0.85rem;
+  .footer-links li a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.88rem;
     color: #94a3b8;
-    text-decoration: none;
     transition: all 0.2s ease;
   }
 
-  .footer-links a:hover {
-    color: #00c2ff;
-    padding-left: 4px;
+  .link-arrow {
+    color: #00f2fe;
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0.6;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .footer-links li a:hover {
+    color: #ffffff;
+    transform: translateX(4px);
+  }
+
+  .footer-links li a:hover .link-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+    color: #00f2fe;
+    filter: drop-shadow(0 0 6px #00f2fe);
+  }
+
+  .highlight-link {
+    color: #38bdf8 !important;
+    font-weight: 600;
+  }
+
+  /* Footer Specs Bar */
+  .footer-specs-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    margin-bottom: 25px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .spec-node {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .spec-label {
+    color: #64748b;
+  }
+
+  .spec-val {
+    color: #38bdf8;
+    font-weight: 600;
   }
 
   .footer-bottom {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 0.82rem;
+    justify-content: space-between;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.84rem;
     color: #64748b;
   }
 
   .footer-bottom-links {
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 12px;
   }
 
   .footer-bottom-links a {
     color: #94a3b8;
-    text-decoration: none;
-    transition: color 0.2s ease;
   }
 
   .footer-bottom-links a:hover {
-    color: #00c2ff;
+    color: #00f2fe;
+  }
+
+  .back-top-text {
+    color: #38bdf8 !important;
+    font-weight: 600;
   }
 
   @media (max-width: 992px) {
     .footer-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr;
     }
   }
 
   @media (max-width: 640px) {
     .footer-grid {
       grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .footer-specs-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
     }
     .footer-bottom {
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       text-align: center;
     }
   }

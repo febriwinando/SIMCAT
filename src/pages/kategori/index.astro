@@ -15,7 +15,7 @@ const categories = queryAll(`
 `);
 ---
 
-<Layout title="Kategori Seleksi Nasional - SIMCAT 2026">
+<Layout title="Kategori Rumpun Seleksi Nasional - SIMCAT 2026">
   <div class="category-page-wrapper">
     <div class="container">
       <div class="page-header text-center">
@@ -31,60 +31,67 @@ const categories = queryAll(`
 
       <!-- Categories Grid -->
       <div class="categories-grid">
-        {categories.map((cat) => (
-          <div class="cat-card glass-panel">
-            <div class="cat-card-header">
-              <span class="cat-icon">{cat.icon}</span>
-              <div class="cat-meta-wrap">
-                <span class="badge badge-cpns">{cat.total_packages} Paket Simulasi</span>
-                <span class="badge badge-pppk">{cat.total_subjects} Subtes Materi</span>
+        {categories.map((cat) => {
+          let catNeon = '#00f2fe';
+          if (cat.id === 'pppk') catNeon = '#00f5a0';
+          else if (cat.id === 'bumn') catNeon = '#ffb703';
+          else if (cat.id === 'sekolah-kedinasan') catNeon = '#ff0055';
+
+          return (
+            <div class="cat-card cyber-card glass-panel" style={`--cat-neon: ${catNeon};`}>
+              <div class="cat-card-header">
+                <span class="cat-icon">{cat.icon}</span>
+                <div class="cat-meta-wrap">
+                  <span class="badge badge-cpns font-mono">{cat.total_packages} Paket</span>
+                  <span class="badge badge-pppk font-mono">{cat.total_subjects} Subtes</span>
+                </div>
+              </div>
+
+              <h2 class="cat-title">{cat.name}</h2>
+              <p class="cat-desc">{cat.description}</p>
+
+              <div class="cat-features cyber-card">
+                {cat.id === 'cpns' && (
+                  <ul>
+                    <li><strong class="font-mono">TWK (30 Soal)</strong>: Passing Grade 65</li>
+                    <li><strong class="font-mono">TIU (35 Soal)</strong>: Passing Grade 80</li>
+                    <li><strong class="font-mono">TKP (45 Soal)</strong>: Passing Grade 166</li>
+                  </ul>
+                )}
+                {cat.id === 'pppk' && (
+                  <ul>
+                    <li><strong class="font-mono">Kompetensi Teknis</strong>: Bobot 5 per butir</li>
+                    <li><strong class="font-mono">Manajerial & Sosbud</strong>: Skala skor 1-4</li>
+                    <li><strong class="font-mono">Wawancara Komputer</strong>: Ambang batas 24</li>
+                  </ul>
+                )}
+                {cat.id === 'bumn' && (
+                  <ul>
+                    <li><strong class="font-mono">TKD BUMN</strong>: Nilai minimal 58</li>
+                    <li><strong class="font-mono">Core Values AKHLAK</strong>: Nilai minimal 65</li>
+                    <li><strong class="font-mono">Kurikulum FHCI 2026</strong></li>
+                  </ul>
+                )}
+                {cat.id === 'sekolah-kedinasan' && (
+                  <ul>
+                    <li><strong class="font-mono">SKD CAT Kedinasan</strong>: Ambang batas BKN</li>
+                    <li><strong class="font-mono">TPA Akademik</strong>: IPDN, STAN, STIS</li>
+                    <li><strong class="font-mono">Sistem Penalti Soal (-1)</strong></li>
+                  </ul>
+                )}
+              </div>
+
+              <div class="cat-actions">
+                <a href={`/kategori/${cat.id}`} class="btn btn-secondary" style="flex: 1;">
+                  Silabus Detail
+                </a>
+                <a href={`/simulasi/${cat.id === 'cpns' ? 'cpns-skd' : cat.id}`} class="btn btn-primary" style="flex: 1;">
+                  Mulai Tes →
+                </a>
               </div>
             </div>
-
-            <h2 class="cat-title">{cat.name}</h2>
-            <p class="cat-desc">{cat.description}</p>
-
-            <div class="cat-features">
-              {cat.id === 'cpns' && (
-                <ul>
-                  <li><strong>TWK (30 Soal)</strong>: Passing Grade 65</li>
-                  <li><strong>TIU (35 Soal)</strong>: Passing Grade 80</li>
-                  <li><strong>TKP (45 Soal)</strong>: Passing Grade 166</li>
-                </ul>
-              )}
-              {cat.id === 'pppk' && (
-                <ul>
-                  <li><strong>Kompetensi Teknis</strong>: Bobot 5 per butir</li>
-                  <li><strong>Manajerial & Sosbud</strong>: Skala skor 1-4</li>
-                  <li><strong>Wawancara Komputer</strong>: Ambang batas 24</li>
-                </ul>
-              )}
-              {cat.id === 'bumn' && (
-                <ul>
-                  <li><strong>TKD BUMN</strong>: Nilai minimal 58</li>
-                  <li><strong>Core Values AKHLAK</strong>: Nilai minimal 65</li>
-                  <li><strong>Kurikulum FHCI 2026</strong></li>
-                </ul>
-              )}
-              {cat.id === 'sekolah-kedinasan' && (
-                <ul>
-                  <li><strong>SKD CAT Kedinasan</strong>: Ambang batas BKN</li>
-                  <li><strong>TPA Akademik Instansi</strong>: IPDN, STAN, STIS</li>
-                  <li><strong>Sistem Penalti Soal (-1)</strong></li>
-                </ul>
-              )}
-            </div>
-
-            <div class="cat-actions">
-              <a href={`/kategori/${cat.id}`} class="btn btn-secondary" style="flex: 1;">
-                Lihat Silabus
-              </a>
-              <a href={`/simulasi/${cat.id === 'cpns' ? 'cpns-skd' : cat.id}`} class="btn btn-primary" style="flex: 1;">
-                Mulai Tes →
-              </a>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   </div>
@@ -92,7 +99,7 @@ const categories = queryAll(`
 
 <style>
   .category-page-wrapper {
-    padding: 60px 0 80px;
+    padding: 60px 0 90px;
   }
 
   .text-center {
@@ -100,16 +107,16 @@ const categories = queryAll(`
   }
 
   .page-header {
-    max-width: 780px;
+    max-width: 800px;
     margin: 0 auto 50px;
   }
 
   .page-title {
-    font-size: 2.4rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: #ffffff;
     margin: 14px 0 16px;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   .page-subtitle {
@@ -127,15 +134,17 @@ const categories = queryAll(`
   .cat-card {
     display: flex;
     flex-direction: column;
-    padding: 32px 28px;
+    padding: 34px 28px;
     border-radius: var(--radius-md);
-    transition: all 0.25s ease;
+    background: rgba(10, 15, 29, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.3s ease, border-color 0.3s ease;
   }
 
   .cat-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    transform: translateY(-6px);
+    border-color: var(--cat-neon);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 242, 254, 0.15);
   }
 
   .cat-card-header {
@@ -146,19 +155,24 @@ const categories = queryAll(`
   }
 
   .cat-icon {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
   }
 
   .cat-meta-wrap {
     display: flex;
-    gap: 6px;
+    gap: 8px;
   }
 
   .cat-title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #ffffff;
     margin-bottom: 12px;
+    transition: color 0.2s ease;
+  }
+
+  .cat-card:hover .cat-title {
+    color: var(--cat-neon);
   }
 
   .cat-desc {
@@ -170,11 +184,11 @@ const categories = queryAll(`
   }
 
   .cat-features {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 14px 16px;
-    margin-bottom: 24px;
+    padding: 16px 18px;
+    margin-bottom: 26px;
   }
 
   .cat-features ul {
@@ -185,8 +199,8 @@ const categories = queryAll(`
   }
 
   .cat-features li {
-    font-size: 0.85rem;
-    color: var(--text-dim);
+    font-size: 0.84rem;
+    color: #94a3b8;
   }
 
   .cat-features strong {

@@ -58,7 +58,24 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.exam-topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #0284c7, #2563eb, #7c3aed, #0284c7);
+  background-size: 200% 100%;
+  animation: laserSlide 6s linear infinite;
+}
+
+@keyframes laserSlide {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
 }
 
 .exam-topbar-inner {
@@ -89,6 +106,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
 }
 
 .candidate-details {
@@ -118,7 +136,13 @@
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
   padding: 6px 18px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 12px rgba(37, 99, 235, 0.08);
+  transition: all 0.25s ease;
+}
+
+.timer-container:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 }
 
 .timer-icon {

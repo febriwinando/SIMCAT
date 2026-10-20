@@ -33,28 +33,32 @@ const recentReviews = queryAll(`
     <div class="container">
       <!-- Breadcrumb -->
       <div class="admin-breadcrumb">
-        <a href="/admin">Backoffice</a>
+        <a href="/admin" onclick="window.playCyberSound?.('click')">COMMAND_DECK</a>
         <span>/</span>
-        <span>Review Editorial Soal</span>
+        <span class="active mono-font">EDITORIAL_REVIEW.PIPELINE</span>
       </div>
 
-      <div class="admin-page-header">
+      <div class="admin-page-header cyber-card" style="padding: 24px 28px; background: rgba(8, 13, 26, 0.85); border: 1px solid rgba(0, 242, 254, 0.25); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.4);">
         <div>
-          <h1 class="page-title">Portal Verifikasi & Review Editorial</h1>
+          <div class="telemetry-pill mb-2" style="font-size: 0.72rem; display: inline-flex;">
+            <span class="beacon"></span>
+            QUALITY_ASSURANCE // {pendingQuestions.length} SOAL DALAM ANTREAN
+          </div>
+          <h1 class="page-title cyber-glitch-title">Portal Verifikasi & Review Editorial</h1>
           <p class="page-subtitle">Pemeriksaan kualitas mutu butir soal, akurasi kunci, pembobotan skor, dan keabsahan rujukan regulasi.</p>
         </div>
       </div>
 
       <!-- Submenu Navigation -->
       <div class="admin-nav-bar">
-        <a href="/admin" class="admin-nav-item">Ringkasan KPI</a>
-        <a href="/admin/bank-soal" class="admin-nav-item">Bank Soal</a>
-        <a href="/admin/review-soal" class="admin-nav-item active">
+        <a href="/admin" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Ringkasan KPI</a>
+        <a href="/admin/bank-soal" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Bank Soal</a>
+        <a href="/admin/review-soal" class="admin-nav-item active" onclick="window.playCyberSound?.('click')">
           Review Editorial
           {pendingQuestions.length > 0 && <span class="badge-count">{pendingQuestions.length}</span>}
         </a>
-        <a href="/admin/paket-ujian" class="admin-nav-item">Paket Ujian & Rules</a>
-        <a href="/admin/audit-log" class="admin-nav-item">Audit Log</a>
+        <a href="/admin/paket-ujian" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Paket Ujian & Rules</a>
+        <a href="/admin/audit-log" class="admin-nav-item" onclick="window.playCyberSound?.('click')">Audit Log</a>
       </div>
 
       <div class="review-layout-grid">
